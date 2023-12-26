@@ -1,0 +1,50 @@
+{
+  "name": "pzhotbar",
+  "version": "2.0.2",
+  "description": "Hot bar mod for project zomboid.",
+  "main": "",
+  "types": "./declaration",
+  "scripts": {
+    "[ GITHUB COMMANDS ]": "",
+    "test-build": "tsc --p build.tsconfig.json",
+    "[ INSTALL COMMANDS ]": "",
+    "install-compiler": "echo \n\nTo install PZPW Compiler run this command in your terminal:\n         npm install -g pzpw-compiler\n\n",
+    "update-compiler": "pzpw-compiler update",
+    "[ COMPILER COMMANDS ]": "",
+    "compile-mods": "pzpw-compiler mods",
+    "compile-workshop": "pzpw-compiler workshop",
+    "[ CLEANUP COMMANDS ]": "",
+    "clean-all": "npm run clean-project && pzpw-compiler clean all",
+    "clean-project": "del-cli --force ./dist ./workshop ./declaration",
+    "clean-cachedir-mods": "pzpw-compiler clean mods",
+    "clean-cachedir-workshop": "pzpw-compiler clean workshop"
+  },
+  "author": "Bzouk",
+  "license": "MIT",
+  "homepage": "https://github.com/Bzouk/pzhotbar",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bzouk/pzhotbar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Bzouk/pzhotbar/issues"
+  },
+  "keywords": [
+    "pzpw",
+    "compiler",
+    "pipewrench",
+    "typescript",
+    "project-zomboid"
+  ],
+  "dependencies": {
+    "@asledgehammer/pipewrench": "latest",
+    "@asledgehammer/pipewrench-events": "latest",
+    "@typescript-to-lua/language-extensions": "latest",
+    "pzpw-compiler": "^2.5.2-alpha"
+  },
+  "devDependencies": {
+    "del-cli": "latest",
+    "lua-types": "latest",
+    "typescript": "^5.0.4"
+  }
+}
