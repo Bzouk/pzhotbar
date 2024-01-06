@@ -3,24 +3,30 @@ This repo was create bases on [Konijima template](https://github.com/Konijima/pz
 |---|---|---|
 
 <br>
-
 # BzoukPzHotBarNew
 
 ## Description
-No description yet...
+This is new version of my old mod. The functionality is essentially the same. 
+Do not use the old and new mod. !!!
 
-<br>
+New stuff:
+- Code is in Typescript and then it's transcribed into Lua. Thank to [PipeWrench](https://github.com/asledgehammer/PipeWrench-Template).
+- Same info panel about the item as in the inventory
+- Hide delete button
+- The mod imports settings from the old mod. (Old file name:bzhotbar.ini, new file name: pzhotbar.ini)
+- no HYPHEN in mod ID
+
+##  Same old description
+
+This mod adds quick access bar for items from player inventory. The main reason I made this mod is because I'm lazy to go through the inventory and look for one item that I just need. Mod idea is based another mod [Hotbar](https://steamcommunity.com/sharedfiles/filedetails/?id=503645367 ) for 5-20 often-used  and also other games (Wow EFT etc.). Mod is also using library "Blindcoders Modding Utility".
 
 Mod ID: pzhotbar
 Workshop ID: 
 
-<br>
 
 > Copyright 2023 Bzouk
 
-<br>
-<hr>
-<br>
+
 
 ## NPM Scripts:
 - `npm install` Install dependencies.

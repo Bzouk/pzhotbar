@@ -13,7 +13,7 @@ New stuff:
 
 [h2] Same old description[/h2]
 
-This mod adds quick access bar for items from player inventory. The main reason I made this mod is because I'm lazy to go through the inventory and look for one item that I just need. Mod idea is based another mod [url=https://steamcommunity.com/sharedfiles/filedetails/?id=503645367] Hotbar for 5-20 often-used [/url] and also other games (Wow EFT etc.). Mod is also using library "Blindcoders Modding Utility".  This is my first mod for project zomboid so please test mod first.
+This mod adds quick access bar for items from player inventory. The main reason I made this mod is because I'm lazy to go through the inventory and look for one item that I just need. Mod idea is based another mod [url=https://steamcommunity.com/sharedfiles/filedetails/?id=503645367] Hotbar for 5-20 often-used [/url] and also other games (Wow EFT etc.). Mod is also using library "Blindcoders Modding Utility".
 
 [b] PZ: build 41 - singleplayer[/b]
 
