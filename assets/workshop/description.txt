@@ -6,8 +6,8 @@ Do not use the old and new mod. !!!
 
 New stuff:
 - Code is in Typescript and then it's transcribed into Lua. Thank to [url=https://github.com/asledgehammer/PipeWrench-Template]PipeWrench[/url]
-- Same info panel about the item as in the inventory
-- Hide delete button
+- Same info panel about the item as in the inventory when hover over slot. 
+- Hide delete button option
 - The mod imports settings from the old mod. (Old file name:bzhotbar.ini, new file name: pzhotbar.ini)
 - no HYPHEN in mod ID
 
