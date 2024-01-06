@@ -3,7 +3,10 @@
   "mods": {
     "pzhotbar": {
       "name": "BzoukPzHotBarNew",
-      "description": ""
+      "description": "Mod add hot bar slot for items to use.",
+      "url": "https://github.com/Bzouk/pzhotbar",
+      "modversion":"0.1.0",
+      "require":"bcUtils"
     }
   },
   "workshop": {

@@ -12,7 +12,7 @@
   },
   "tstl": {
     "noHeader": true,
-    "noImplicitSelf": true
+    "noImplicitSelf": false
   },
   "exclude": [
     "node_modules"
