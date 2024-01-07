@@ -1,12 +1,12 @@
 [h1] Hot bar mod v2 [/h1]
-Hi everybody,
+Hi everybody, 
 
-This is new version of my old mod. The functionality is essentially the same. 
-Do not use the old and new mod. !!!
+This is new version of my [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2434425002] old mod [/url] The functionality is essentially the same.
+[h3]Do not use the old and new mod at the same time. !!![/h3]
 
 New stuff:
 - Code is in Typescript and then it's transcribed into Lua. Thank to [url=https://github.com/asledgehammer/PipeWrench-Template]PipeWrench[/url]
-- Same info panel about the item as in the inventory when hover over slot. 
+- Same info panel about the item as in the inventory when hover over slot.
 - Hide delete button option
 - The mod imports settings from the old mod. (Old file name:bzhotbar.ini, new file name: pzhotbar.ini)
 - no HYPHEN in mod ID
@@ -137,3 +137,6 @@ Tab key for show/hide bar
 - right click crafting need items to be in main inventory or backpack (game mechanic)
 
 Tags:B41,Interface
+
+Workshop ID: 3133189049
+Mod ID: pzhotbar

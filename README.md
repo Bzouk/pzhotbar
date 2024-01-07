@@ -21,7 +21,7 @@ New stuff:
 This mod adds quick access bar for items from player inventory. The main reason I made this mod is because I'm lazy to go through the inventory and look for one item that I just need. Mod idea is based another mod [Hotbar](https://steamcommunity.com/sharedfiles/filedetails/?id=503645367 ) for 5-20 often-used  and also other games (Wow EFT etc.). Mod is also using library "Blindcoders Modding Utility".
 
 Mod ID: pzhotbar
-Workshop ID: 
+Workshop ID: 3133189049
 
 
 > Copyright 2023 Bzouk

@@ -10,13 +10,15 @@
     }
   },
   "workshop": {
+    "id": 3133189049,
     "title": "BzoukPzHotBarNew",
     "visibility": "public",
     "mods": [
       "pzhotbar"
     ],
     "tags": [
-      "Build 41"
+      "Build 41",
+      "Interface"
     ],
     "author": [
       "Bzouk"
