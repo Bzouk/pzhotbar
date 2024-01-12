@@ -411,7 +411,7 @@ ISBzHotSlot.activeteSlot = function () {
                 ISTimedActionQueue.add(new ISInventoryTransferAction(playerObject, comboItem, playerInv, returnToContainer, 0)) // time 0 = not specified
             }
         } else if (ISInventoryPaneContextMenu.startWith(comboItem.getType(), "Pills")) { // -- pills like betablockers -- ISInventoryPaneContextMenu
-            ISInventoryPaneContextMenu.onPutItems([comboItem], playerNumber)
+            ISInventoryPaneContextMenu.onPillsItems([comboItem], playerNumber)
             if (returnToContainer != null && (returnToContainer != playerInv)) {
                 // return item to original container
                 ISTimedActionQueue.add(new ISInventoryTransferAction(playerObject, comboItem, playerInv, returnToContainer, 0)) // time 0 = not specified
