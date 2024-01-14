@@ -264,7 +264,7 @@ function createWindows() {
             const window = ISBzHotBarWindow.new(x, y, width, height, getHotBarSlotDimension(), windowNum, rows, columns, table, getDeleteText(), showDeleteButton,ISBzHotBar.main.transferWeapons,ISBzHotBar.main.showToolTip)
             window.setVisible(ISBzHotBar.main.show);
             window.addToUIManager();
-            window.backMost();
+            // window.backMost(); // TODO differrent aproch
             windowssHolder.set(windowNum, window);
         }
     }

@@ -179,6 +179,9 @@ function predicateNotBroken(item: InventoryItem): boolean {
     return !item.isBroken()
 }
 
+// public InventoryItem getBestEvalArg(LuaClosure var1, LuaClosure var2, Object var3) {
+    // for 
+
 ISBzHotSlot.onRightMouseUp = function (x: any, y: any) {
     const player = getPlayer()
     if (player == null) {

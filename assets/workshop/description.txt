@@ -137,6 +137,3 @@ Tab key for show/hide bar
 - right click crafting need items to be in main inventory or backpack (game mechanic)
 
 Tags:B41,Interface
-
-Workshop ID: 3133189049
-Mod ID: pzhotbar
