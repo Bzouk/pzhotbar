@@ -86,7 +86,7 @@ declare class MainHolder extends LuaTable {
     transferWeapons: boolean
     simpleDeleteButton: boolean
     showDeleteButton: boolean
-    showToolTip:boolean
+    showToolTip: boolean
     slotsSize: number
     slotsSizes: number[]
 }
@@ -170,19 +170,19 @@ function loadConfig() {
     if (!bcUtils.tableIsEmpty(ini)) {
         updateFromTable(ini);
         return
-    } 
+    }
     const iniOld = bcUtils.readINI(ConfigFileNameOld);
     if (!bcUtils.tableIsEmpty(iniOld)) {
         updateFromTable(iniOld);
         return
-    } 
+    }
 }
 /**
  * Loads the configuration from the specified file and initializes the necessary tables.
  *
  * @return {void} This function does not return a value.
  */
-function updateFromTable(ini:LuaTable) {
+function updateFromTable(ini: LuaTable) {
     if (!ini.has(Constants.TABLE_MAIN)) {
         ini.set(Constants.TABLE_MAIN, new LuaTable());
     }
@@ -193,8 +193,8 @@ function updateFromTable(ini:LuaTable) {
     ISBzHotBar.main.set(Constants.TABLE_SLOT_SLOTSIZE, tonumber(iniMainTable.get(Constants.TABLE_SLOT_SLOTSIZE)));
     ISBzHotBar.main.set(Constants.TABLE_SLOT_SIMPLEDELETEBUTTON, str_to_bool(iniMainTable.get(Constants.TABLE_SLOT_SIMPLEDELETEBUTTON)));
     ISBzHotBar.main.set(Constants.TABLE_SLOT_SHOWTOLLTIP, str_to_bool(iniMainTable.get(Constants.TABLE_SLOT_SHOWTOLLTIP)));
-    
-    
+
+
     if (!ini.has(Constants.TABLE_ARRAY_ITEMS)) {
         ini.set(Constants.TABLE_ARRAY_ITEMS, []);
     }
@@ -260,8 +260,7 @@ function createWindows() {
             const height = getHotBarHeight(rows)
             const table = ISBzHotBar.items.get(windowNum)
             const showDeleteButton = ISBzHotBar.main.showDeleteButton
-            const showToolTip  = ISBzHotBar.main.showToolTip
-            const window = ISBzHotBarWindow.new(x, y, width, height, getHotBarSlotDimension(), windowNum, rows, columns, table, getDeleteText(), showDeleteButton,ISBzHotBar.main.transferWeapons,ISBzHotBar.main.showToolTip)
+            const window = ISBzHotBarWindow.new(x, y, width, height, getHotBarSlotDimension(), windowNum, rows, columns, table, getDeleteText(), showDeleteButton, ISBzHotBar.main.transferWeapons, ISBzHotBar.main.showToolTip)
             window.setVisible(ISBzHotBar.main.show);
             window.addToUIManager();
             // window.backMost(); // TODO differrent aproch
@@ -308,19 +307,18 @@ function updateAllSlots() {
  * On key press toggle windows.
  */
 Events.onKeyPressed.addListener((key) => {
-    if (( key == getCore().getKey("Bz_Toggle_Hotbar")) && getPlayer() && getGameSpeed() > 0) {
+    if ((key == getCore().getKey("Bz_Toggle_Hotbar")) && getPlayer() && getGameSpeed() > 0) {
         toggleWindows();
         updateAllSlots()
     }
 });
 
-Events.onResolutionChange.addListener(() => {
-    if (MainScreen.instance.inGame) {
-        return
-    }
+Events.onResolutionChange.addListener((oldWidth: number, oldHeight: number, newWidth: number, newHeight: number) => {
+    const newX = newWidth - oldWidth
+    const newY = newHeight - oldHeight
     for (const windowNum of $range(1, ISBzHotBar.main.activeWindows)) {
-        ISBzHotBar.windows.get(windowNum).x = 0
-        ISBzHotBar.windows.get(windowNum).x = 0
+        ISBzHotBar.windows.get(windowNum).x = math.max(ISBzHotBar.windows.get(windowNum).x + (newX), 0)
+        ISBzHotBar.windows.get(windowNum).y = math.max(ISBzHotBar.windows.get(windowNum).y + (newY), 0)
     }
     reloadWindows()
 })
@@ -385,7 +383,7 @@ declare class ModOptionsDataHolder extends LuaTable {
     simpledelete: ModOptionsData
     dropdownslotsize: ModOptionsData
     showdeletebutton: ModOptionsData
-    showtooltip:ModOptionsData
+    showtooltip: ModOptionsData
 }
 declare class Options extends LuaTable {
     activeWindows: number
