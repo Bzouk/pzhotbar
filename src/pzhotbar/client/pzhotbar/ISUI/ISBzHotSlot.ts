@@ -4,7 +4,7 @@
  *       from prepending a 'self' reference, which is usually not necessary and complicates
  *       rendered Lua code.
  */
-import { ISPanel, ISButton, getTexture, getTextManager, UIFont, ISInventoryPane, getPlayer, InventoryItem, InventoryItemFactory, zombie, _instanceof_, DrainableComboItem, Food, MoodleType, ISInventoryPaneContextMenu, ISTimedActionQueue, ISInventoryTransferAction, getText, ISDisinfect, ISStitch, HandWeapon, ISHotbar, BodyPartType, Radio, ISUnequipAction, ISCleanBurn, Literature, ISRemoveGlass, ISRemoveBullet, ISComfreyCataplasm, ISGarlicCataplasm, ISPlantainCataplasm, ISSplint, ISToolTipInv, TutorialHelperFunctions, getSpecificPlayer } from "@asledgehammer/pipewrench";
+import { ISPanel, ISButton, getTexture, getTextManager, UIFont, ISInventoryPane, getPlayer, InventoryItem, InventoryItemFactory, zombie, _instanceof_, DrainableComboItem, Food, MoodleType, ISInventoryPaneContextMenu, ISTimedActionQueue, ISInventoryTransferAction, getText, ISDisinfect, ISStitch, HandWeapon, ISHotbar, BodyPartType, Radio, ISUnequipAction, ISCleanBurn, Literature, ISRemoveGlass, ISRemoveBullet, ISComfreyCataplasm, ISGarlicCataplasm, ISPlantainCataplasm, ISSplint, ISToolTipInv, TutorialHelperFunctions, getSpecificPlayer, ItemContainer } from "@asledgehammer/pipewrench";
 // PipeWrench Events API.
 import * as ISBzHotSlotDer from "./ISBzHotSlotDer"
 
@@ -22,8 +22,8 @@ declare class ItemInfo extends LuaTable {
 }
 /** @customConstructor ____exports.ISBzHotSlot:new */
 export declare class ISBzHotSlotClass extends ISPanel {
-    constructor(x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip:boolean);
-    new: (x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip:boolean) => ISBzHotSlotClass
+    constructor(x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip: boolean);
+    new: (x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip: boolean) => ISBzHotSlotClass
     slotNum: number
     windowNum: number
     itemInfo: ItemInfo
@@ -33,7 +33,8 @@ export declare class ISBzHotSlotClass extends ISPanel {
     showDelete: boolean
     transferWeapons: boolean
     toolRender: ISToolTipInv
-    showToolTip:boolean
+    showToolTip: boolean
+    worstItemsFirtst: boolean
 
     setItem: (invItem: InventoryItem) => any
     updateItem: () => any
@@ -49,7 +50,7 @@ function getSizeOfRemoveButton(text: string): number {
 }
 
 export const ISBzHotSlot = ISBzHotSlotDer.ISBzHotSlot as ISBzHotSlotClass
-ISBzHotSlot.new = function (x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip:boolean) {
+ISBzHotSlot.new = function (x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip: boolean) {
     const o = (new ISPanel(x, y, width, height) as ISBzHotSlotClass)
     setmetatable(o, this)
     this.__index = this
@@ -68,6 +69,7 @@ ISBzHotSlot.new = function (x: number, y: number, width: number, height: number,
     o.showDelete = showDelete
     o.transferWeapons = transferWeapons
     o.showToolTip = showToolTip
+    o.worstItemsFirtst = true
 
     return o
 }
@@ -179,8 +181,28 @@ function predicateNotBroken(item: InventoryItem): boolean {
     return !item.isBroken()
 }
 
+/** @noSelf **/
+function predicateItem(item: InventoryItem, fullType: string): boolean {
+    return (item.getFullType() == fullType) && (predicateNotBroken(item))
+}
+
+/** @noSelf **/
+function predicateWorstConditon(item1:InventoryItem, item2:InventoryItem): number {
+   return item2.getCondition() - item1.getCondition()
+}
+
+ISBzHotSlot.getItem = function (playerInventory: ItemContainer, itemFullName: string): InventoryItem {
+    var itemFromInv : InventoryItem
+    if (this.itemFromInv) {
+        itemFromInv = playerInventory.getBestEvalArgRecurse(predicateItem, predicateWorstConditon, itemFullName)
+    } else {
+        itemFromInv = playerInventory.getFirstTypeEvalRecurse(itemFullName, predicateNotBroken)
+    }
+    return itemFromInv
+}
+
 // public InventoryItem getBestEvalArg(LuaClosure var1, LuaClosure var2, Object var3) {
-    // for 
+// for 
 
 ISBzHotSlot.onRightMouseUp = function (x: any, y: any) {
     const player = getPlayer()

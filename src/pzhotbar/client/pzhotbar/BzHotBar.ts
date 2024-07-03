@@ -303,24 +303,34 @@ function updateAllSlots() {
     })
 }
 
+function checkWindowsBounds() {
+    for (const windowNum of $range(1, ISBzHotBar.main.activeWindows)) {
+        const window = ISBzHotBar.windows.get(windowNum);
+        if (window.x + getHotBarWidth(window.columns) > getCore().getScreenWidth()) {
+            window.x = math.max(getCore().getScreenWidth() - getHotBarWidth(window.columns), 0);
+            windowssHolder.get(windowNum)?.setX(window.x);
+        }
+        if (window.y + getHotBarHeight(window.rows) > getCore().getScreenHeight()) {
+            window.y = math.max(getCore().getScreenHeight() - getHotBarHeight(window.rows), 0);
+            windowssHolder.get(windowNum)?.setY(window.y);
+        }
+    }
+}
+
 /**
  * On key press toggle windows.
  */
 Events.onKeyPressed.addListener((key) => {
     if ((key == getCore().getKey("Bz_Toggle_Hotbar")) && getPlayer() && getGameSpeed() > 0) {
+        checkWindowsBounds();
         toggleWindows();
         updateAllSlots()
     }
 });
 
 Events.onResolutionChange.addListener((oldWidth: number, oldHeight: number, newWidth: number, newHeight: number) => {
-    const newX = newWidth - oldWidth
-    const newY = newHeight - oldHeight
-    for (const windowNum of $range(1, ISBzHotBar.main.activeWindows)) {
-        ISBzHotBar.windows.get(windowNum).x = math.max(ISBzHotBar.windows.get(windowNum).x + (newX), 0)
-        ISBzHotBar.windows.get(windowNum).y = math.max(ISBzHotBar.windows.get(windowNum).y + (newY), 0)
-    }
-    reloadWindows()
+     checkWindowsBounds();
+     reloadWindows();
 })
 
 Events.onSave.addListener(() => {
