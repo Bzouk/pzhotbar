@@ -551,6 +551,8 @@ ISBzHotSlot.activeteSlot = function () {
             }
         } else if (itemInInv.getCategory() == "Clothing" && !playerObject.isEquipped(itemInInv)) {
             ISInventoryPaneContextMenu.onWearItems([itemInInv], playerNumber)
+        } else if (itemInInv.getCategory() == "Clothing" && playerObject.isEquipped(itemInInv)) {
+            ISInventoryPaneContextMenu.onUnEquip([itemInInv], playerNumber)
         } else if (itemInInv.getCategory() == "Literature" && !(itemInInv as Literature).canBeWrite() && !playerObject.getCharacterTraits().isIlliterate()) {
             ISInventoryPaneContextMenu.onLiteratureItems([itemInInv], playerNumber)
         } else if (itemInInv.getType() == "SutureNeedleHolder" || itemInInv.getType() == "Tweezers") {
