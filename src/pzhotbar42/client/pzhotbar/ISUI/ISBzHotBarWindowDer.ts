@@ -4,11 +4,9 @@
  *       from prepending a 'self' reference, which is usually not necessary and complicates
  *       rendered Lua code.
  */
-declare namespace ISPanel {
-    /**
-     * @noSelf
-     */
+declare namespace ISCollapsableWindow {
+
     export function derive(this:any,type: string): any;
   }
 
-export const ISBzHotSlot = ISPanel.derive("ISBzHotSlot");
+export const ISBzHotBarWindow = ISCollapsableWindow.derive("ISBzHotBarWindow");
