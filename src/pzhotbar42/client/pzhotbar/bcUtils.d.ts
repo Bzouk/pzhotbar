@@ -5,8 +5,13 @@
  *       from prepending a 'self' reference, which is usually not necessary and complicates
  *   
 */
-declare namespace bcUtils{
+
+//declare namespace bcUtils{
+   /** @noSelf */
   export function readINI(filename:string): LuaTable;
+   /** @noSelf */
   export function writeINI(filename:string,data:any): void;
+   /** @noSelf */
   export function tableIsEmpty(table:LuaTable): boolean;
-}
+//}
+ 

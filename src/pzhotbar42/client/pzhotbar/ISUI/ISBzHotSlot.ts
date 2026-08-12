@@ -4,12 +4,22 @@
  *       from prepending a 'self' reference, which is usually not necessary and complicates
  *       rendered Lua code.
  */
-import { ISPanel, ISButton, getTexture, getTextManager, UIFont, ISInventoryPane, getPlayer, InventoryItem, InventoryItemFactory, zombie, _instanceof_, DrainableComboItem, Food, MoodleType, ISInventoryPaneContextMenu, ISTimedActionQueue, ISInventoryTransferAction, getText, ISDisinfect, ISStitch, HandWeapon, ISHotbar, BodyPartType, Radio, ISUnequipAction, ISCleanBurn, Literature, ISRemoveGlass, ISRemoveBullet, ISComfreyCataplasm, ISGarlicCataplasm, ISPlantainCataplasm, ISSplint, ISToolTipInv, TutorialHelperFunctions, getSpecificPlayer, ItemContainer } from "@asledgehammer/pipewrench";
+import { ISPanel, ISButton, getTexture, getTextManager, UIFont, ISInventoryPane, getPlayer, InventoryItem, zombie, _instanceof_, DrainableComboItem, Food, MoodleType, ISTimedActionQueue, ISInventoryTransferAction, getText, ISDisinfect, ISStitch, HandWeapon, ISHotbar, BodyPartType, Radio, ISUnequipAction, ISCleanBurn, Literature, ISRemoveGlass, ISRemoveBullet, ISComfreyCataplasm, ISGarlicCataplasm, ISPlantainCataplasm, ISSplint, ISToolTipInv, TutorialHelperFunctions, ItemContainer, lua, ISTakePillAction, ISWearClothing } from "@asledgehammer/pipewrench";
 // PipeWrench Events API.
 import * as ISBzHotSlotDer from "./ISBzHotSlotDer"
 
+
+
 const frozenItemIcon = getTexture("media/ui/icon_frozen.png")
 const poisonIcon = getTexture("media/ui/SkullPoison.png");
+
+declare class ISInventoryPaneContextMenu extends lua.client.ISUI.ISInventoryPaneContextMenu {
+    /** @noSelf */
+    static onDrinkFluid: (waterContainer: any, percent: any, playerObj: any) => any;
+    /** @noSelf */
+    static getEatingMask: (playerObj: any, removeMask: any) => any;
+}
+
 
 declare class ItemInfo extends LuaTable {
     itemFullName: string
@@ -22,8 +32,8 @@ declare class ItemInfo extends LuaTable {
 }
 /** @customConstructor ____exports.ISBzHotSlot:new */
 export declare class ISBzHotSlotClass extends ISPanel {
-    constructor(x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip: boolean);
-    new: (x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip: boolean) => ISBzHotSlotClass
+    constructor(x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip: boolean, opacity:number);
+    new: (x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip: boolean, opacity:number) => ISBzHotSlotClass
     slotNum: number
     windowNum: number
     itemInfo: ItemInfo
@@ -40,17 +50,23 @@ export declare class ISBzHotSlotClass extends ISPanel {
     updateItem: () => any
     loadItemFromTable: () => any
     activeteSlot: () => any
+    removeItem: () => any
+    createChildren: () => any
+    onMouseUp: () => any
+    getItem: (playerInventory: ItemContainer, itemFullName: string)=> InventoryItem
+    prerender: () => any
+    update: () => any
     onRightMouseUp: (x: any, y: any) => any
 }
 
 
 /** @noSelf **/
 function getSizeOfRemoveButton(text: string): number {
-    return math.max(10, getTextManager().MeasureStringY(UIFont.Small, text)) //  ISBzHotBar.getHotBarDeleteText()
+    return math.max(5, getTextManager().MeasureStringY(UIFont.NewSmall, text)) //  ISBzHotBar.getHotBarDeleteText()
 }
 
 export const ISBzHotSlot = ISBzHotSlotDer.ISBzHotSlot as ISBzHotSlotClass
-ISBzHotSlot.new = function (x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip: boolean) {
+ISBzHotSlot.new = function (x: number, y: number, width: number, height: number, itemTable: LuaTable<number, string>, slot: number, deleteButText: string, showDelete: boolean, transferWeapons: boolean, showToolTip: boolean, opacity:number) {
     const o = (new ISPanel(x, y, width, height) as ISBzHotSlotClass)
     setmetatable(o, this)
     this.__index = this
@@ -58,7 +74,7 @@ ISBzHotSlot.new = function (x: number, y: number, width: number, height: number,
     o.anchorLeft = true;
     o.anchorRight = true;
     o.anchorTop = true;
-    o.backgroundColor = { r: 0, g: 0, b: 0, a: 0.8 };
+    o.backgroundColor = { r: 0, g: 0, b: 0, a: opacity }; // 0.8
     o.borderColor = { r: 0.4, g: 0.4, b: 0.4, a: 1 };
     o.slotNum = slot;
     o.itemInfo = new ItemInfo()
@@ -144,7 +160,8 @@ ISBzHotSlot.update = function () {
     // If the conditions are met, the function retrieves the player's inventory and searches for the item in the inventory. If the item is not found, the function removes the tool tip from the UI.
     const playerObject = getPlayer()
     const playerInv = playerObject.getInventory()
-    const itemInInv = playerInv.getFirstTypeEvalRecurse(itemInfo.itemFullName, predicateNotBroken)
+    //const itemInInv = playerInv.getFirstTypeEvalRecurse(itemInfo.itemFullName, predicateNotBroken)
+    const itemInInv = playerInv.getBestEvalArgRecurse(predicateItem, predicateBestItem, itemInfo.itemFullName)
     // no item do nothing
     if (itemInInv == null) {
         if (this.toolRender != null) {
@@ -187,12 +204,35 @@ function predicateItem(item: InventoryItem, fullType: string): boolean {
 }
 
 /** @noSelf **/
-function predicateWorstConditon(item1:InventoryItem, item2:InventoryItem): number {
-   return item2.getCondition() - item1.getCondition()
+function predicateWorstConditon(item1: InventoryItem, item2: InventoryItem): number {
+    return item2.getCondition() - item1.getCondition()
 }
 
+/** @noSelf **/
+function predicateBestItem(item1: InventoryItem, item2: InventoryItem): number {
+    if (item1.hasComponent(ComponentType.FluidContainer) && (item2.hasComponent(ComponentType.FluidContainer))) {
+        const items1Connt = item1.getFluidContainer()
+        const items2Connt = item2.getFluidContainer()
+        // get open items first
+        let scoreItem1 = 0.0
+        let scoreItem2 = 0.0
+        if (items1Connt.canPlayerEmpty()) {
+            scoreItem1 += 10.0
+        }
+        if (items2Connt.canPlayerEmpty()) {
+            scoreItem2 += 10.0
+        }
+        scoreItem1 += items1Connt.getFilledRatio()
+        scoreItem2 += items2Connt.getFilledRatio()
+        return scoreItem1 - scoreItem2
+    }
+    return item2.getCondition() - item1.getCondition()
+}
+
+
 ISBzHotSlot.getItem = function (playerInventory: ItemContainer, itemFullName: string): InventoryItem {
-    var itemFromInv : InventoryItem
+    let itemFromInv: InventoryItem
+
     if (this.itemFromInv) {
         itemFromInv = playerInventory.getBestEvalArgRecurse(predicateItem, predicateWorstConditon, itemFullName)
     } else {
@@ -217,7 +257,8 @@ ISBzHotSlot.onRightMouseUp = function (x: any, y: any) {
         return
     }
     const itemInfo = this.itemInfo
-    ISInventoryPaneContextMenu.createMenu(player.getPlayerNum(), true, [playerInventory.getFirstTypeEvalRecurse(itemInfo.itemFullName, predicateNotBroken)], this.getAbsoluteX() + x, this.getAbsoluteY() + y, this)
+    // ISInventoryPaneContextMenu.createMenu(player.getPlayerNum(), true, [playerInventory.getFirstTypeEvalRecurse(itemInfo.itemFullName, predicateNotBroken)], this.getAbsoluteX() + x, this.getAbsoluteY() + y, this)
+    ISInventoryPaneContextMenu.createMenu(player.getPlayerNum(), true, [playerInventory.getBestEvalArgRecurse(predicateItem, predicateBestItem, itemInfo.itemFullName)], this.getAbsoluteX() + x, this.getAbsoluteY() + y, this)
 }
 
 /**
@@ -236,6 +277,9 @@ ISBzHotSlot.setItem = function (invItem: InventoryItem) {
 }
 
 
+/** @noSelf **/
+declare function instanceItem(arg0: string | number, arg1?: number | zombie.inventory.types.Food | string, arg2?: boolean | string, arg3?: string): zombie.inventory.InventoryItem;
+
 ISBzHotSlot.updateItem = function () {
     const itemInfo = this.itemInfo
     if (itemInfo.itemFullName == null || itemInfo.itemFullName == "") {
@@ -253,7 +297,8 @@ ISBzHotSlot.updateItem = function () {
     itemInfo.count = playerInventory.getItemCountRecurse(itemInfo.itemFullName)
 
     if (itemInfo.texture == null) {
-        const instItem = InventoryItemFactory.CreateItem(itemInfo.itemFullName);
+        //const instItem = InventoryItemFactory.CreateItem(itemInfo.itemFullName);
+        const instItem = instanceItem(itemInfo.itemFullName)
         if (instItem != null) {
             itemInfo.texture = instItem.getTexture()
         }
@@ -263,12 +308,18 @@ ISBzHotSlot.updateItem = function () {
     itemInfo.isFrozen = false
     itemInfo.condition = 0
     itemInfo.color = { r: 0.000, g: 0.502, b: 0, a: 0.4 }
-    const itemFromInv = playerInventory.getFirstTypeEvalRecurse(itemInfo.itemFullName, predicateNotBroken)
+    //const itemFromInv = playerInventory.getFirstTypeEvalRecurse(itemInfo.itemFullName, predicateNotBroken)
+    const itemFromInv = playerInventory.getBestEvalArgRecurse(predicateItem, predicateBestItem, itemInfo.itemFullName)
+
 
     if (_instanceof_(itemFromInv, "HandWeapon")) {
         itemInfo.condition = itemFromInv.getCondition() / itemFromInv.getConditionMax()
     } else if (_instanceof_(itemFromInv, "DrainableComboItem")) {
-        itemInfo.condition = (itemFromInv as DrainableComboItem).getUsedDelta()
+        itemInfo.condition = (itemFromInv as DrainableComboItem).getCurrentUsesFloat()
+    } else if (_instanceof_(itemFromInv, "ComboItem")) {
+        if (itemFromInv.hasComponent(ComponentType.FluidContainer)) {
+            itemInfo.condition = itemFromInv.getFluidContainer().getFilledRatio()
+        }
     }
     if (itemInfo.condition > 0) {
         const condition = itemInfo.condition
@@ -327,7 +378,7 @@ ISBzHotSlot.prerender = function () {
     let iconBoxSize = this.height;
     if (this.showDelete) {
         this.removeButton.setVisible(true)
-        iconBoxSize = iconBoxSize - getSizeOfRemoveButton(this.deleteButString);
+        iconBoxSize = iconBoxSize - getSizeOfRemoveButton(this.deleteButText);
     }
 
     const imgSize = math.min(this.width, iconBoxSize);
@@ -396,7 +447,8 @@ ISBzHotSlot.activeteSlot = function () {
     // search in inventory + backpack and container in inventory
     // local item = playerObj:getInventory():getFirstTypeRecurse(self.object.item);
     const playerInv = playerObject.getInventory()
-    const itemInInv = playerInv.getFirstTypeEvalRecurse(itemInfo.itemFullName, predicateNotBroken)
+    //const itemInInv = playerInv.getFirstTypeEvalRecurse(itemInfo.itemFullName, predicateNotBroken)
+    const itemInInv = playerInv.getBestEvalArgRecurse(predicateItem, predicateBestItem, itemInfo.itemFullName)
     // no item do nothing
     if (itemInInv == null) {
         return
@@ -407,7 +459,8 @@ ISBzHotSlot.activeteSlot = function () {
 
     // https://projectzomboid.com/modding/zombie/inventory/InventoryItem.html
     // same like ISInventoryPane:doContextualDblClick(item)
-    if (_instanceof_(itemInInv, "Food")) {
+    //if (_instanceof_(itemInInv, "Food")) {
+    if (itemInInv.getCategory() == "Food" || itemInInv.getScriptItem().isCantEat()) {
         const food = itemInInv as Food
         if (!food.isPoison() && !food.isFrozen()) {   // if not posion, and not frozen
             if (food.getHungChange() < 0) {
@@ -436,12 +489,24 @@ ISBzHotSlot.activeteSlot = function () {
                 ISTimedActionQueue.add(new ISInventoryTransferAction(playerObject, comboItem, playerInv, returnToContainer, 0)) // time 0 = not specified
             }
         } else if (ISInventoryPaneContextMenu.startWith(comboItem.getType(), "Pills")) { // -- pills like betablockers -- ISInventoryPaneContextMenu
-            ISInventoryPaneContextMenu.onPillsItems([comboItem], playerNumber)
+            // if pill isn't in main inventory, put it there first.
+            ISInventoryPaneContextMenu.transferIfNeeded(playerObject, comboItem)
+            // now remove a mask
+            const mask = ISInventoryPaneContextMenu.getEatingMask(playerObject, true)
+            // take the pill
+            let lastAction = new ISTakePillAction(playerObject, comboItem, null)
+            ISTimedActionQueue.add(lastAction);
+            if (mask) {
+                lastAction = new ISWearClothing(playerObject, mask, 50)
+                ISTimedActionQueue.add(lastAction)
+            }
+
+            //ISInventoryPaneContextMenu.onPillsItems([comboItem], playerNumber)
             if (returnToContainer != null && (returnToContainer != playerInv)) {
                 // return item to original container
-                ISTimedActionQueue.add(new ISInventoryTransferAction(playerObject, comboItem, playerInv, returnToContainer, 0)) // time 0 = not specified
+                ISTimedActionQueue.addAfter(lastAction, new ISInventoryTransferAction(playerObject, comboItem, playerInv, returnToContainer, null)) // time 0 = not specified
             }
-        } else if (comboItem.getAlcoholPower() > 0 && (ISInventoryPaneContextMenu.startWith(comboItem.getType(), "Disinfectant") || ISInventoryPaneContextMenu.startWith(comboItem.getType(), "AlcoholWipes"))) {
+        } else if (comboItem.getAlcoholPower() == 4.0 && (ISInventoryPaneContextMenu.startWith(comboItem.getType(), "Disinfectant") || ISInventoryPaneContextMenu.startWith(comboItem.getType(), "AlcoholWipes"))) {
             // if alcohol comboItem  we get all the damaged body part
             const bodyPartDamaged = haveDamagePart(playerObject)
             bodyPartDamaged.forEach((bodyPart) => {
@@ -458,7 +523,7 @@ ISBzHotSlot.activeteSlot = function () {
             }
         } else if ((comboItem.getType() == "DishCloth" || itemInInv.getType() == "BathTowel") && playerObject.getBodyDamage().getWetness() > 0) {
             ISInventoryPaneContextMenu.onDryMyself([comboItem], playerNumber)
-        } else if (comboItem.getType() == "Thread" && comboItem.getUsedDelta() > 0) {
+        } else if (comboItem.getType() == "Thread" && comboItem.getCurrentUsesFloat() >= 0) {
             const itemNeedle = playerObject.getInventory().getFirstTypeRecurse("Needle")
             // no itemNeedle do nothing
             if (!itemNeedle) {
@@ -490,6 +555,61 @@ ISBzHotSlot.activeteSlot = function () {
                 if (retCont && (retCont != playerInv)) {
                     ISTimedActionQueue.add(new ISInventoryTransferAction(playerObject, itemsSutureNeedleHolder, playerInv, retCont, 0))
                 }
+            }
+        }
+    } else if (ISInventoryPaneContextMenu.startWith(itemInInv.getType(), "Pills") || itemInInv.hasTag("Pills") || itemInInv.hasTag("Consumable")) {
+        // if pill isn't in main inventory, put it there first.
+        ISInventoryPaneContextMenu.transferIfNeeded(playerObject, itemInInv)
+        // now remove a mask
+        const mask = ISInventoryPaneContextMenu.getEatingMask(playerObject, true)
+        // take the pill
+        let lastAction = new ISTakePillAction(playerObject, itemInInv, null)
+        ISTimedActionQueue.add(lastAction);
+        if (mask) {
+            lastAction = new ISWearClothing(playerObject, mask, 50)
+            ISTimedActionQueue.add(lastAction)
+        }
+        //ISInventoryPaneContextMenu.onPillsItems([comboItem], playerNumber)
+        if (returnToContainer != null && (returnToContainer != playerInv)) {
+            // return item to original container
+            ISTimedActionQueue.addAfter(lastAction, new ISInventoryTransferAction(playerObject, itemInInv, playerInv, returnToContainer, null)) // time 0 = not specified
+        }
+    } else if (itemInInv.hasComponent(ComponentType.FluidContainer)) {
+        const fluidcontainer = itemInInv.getFluidContainer()
+        const primaryFluid = fluidcontainer.getPrimaryFluid()
+        if ((fluidcontainer.getProperties().getAlcohol() > 0.15) && (fluidcontainer.getAmount() > 0.15)) {
+            const bodyPartDamaged = haveDamagePart(playerObject)
+            bodyPartDamaged.forEach((bodyPart) => {
+                if (bodyPart.getAlcoholLevel() == 0) {
+                    // if Disinfectant isn't in main inventory, put it there first.
+                    ISInventoryPaneContextMenu.transferIfNeeded(playerObject, itemInInv)
+                    // apply Disinfect
+                    ISTimedActionQueue.add(new ISDisinfect(playerObject, playerObject, itemInInv, bodyPart))
+                }
+            })
+            if (returnToContainer != null && (returnToContainer != playerInv)) {
+                // return item to original container
+                ISTimedActionQueue.add(new ISInventoryTransferAction(playerObject, itemInInv, playerInv, returnToContainer, 0)) // time 0 = not specified
+            }
+        } else if ((itemInInv.isWaterSource() || (primaryFluid && primaryFluid.getFluidTypeString() == "Water" || primaryFluid.getFluidTypeString() == "CarbonatedWater")) && (playerObject.getStats().getThirst() > 0.1)) {
+            // no TaintedWater
+            if (primaryFluid.getFluidTypeString() == "TaintedWater") {
+                return
+            }
+            ISInventoryPaneContextMenu.onDrinkForThirst(itemInInv, playerObject)
+            if (returnToContainer != null && (returnToContainer != playerInv)) {
+                // return item to original container
+                ISTimedActionQueue.add(new ISInventoryTransferAction(playerObject, itemInInv, playerInv, returnToContainer, 0)) // time 0 = not specified
+            }
+        } else if (primaryFluid.isCategory(FluidCategory.Beverage)) {
+            if (!fluidcontainer.canPlayerEmpty() || (playerObject.getMoodleLevel(MoodleType.FoodEaten) >= 3 && playerObject.getNutrition().getCalories() >= 1000) || fluidcontainer.getCapacity() > 3.0) {
+                return
+            }
+            /** @customName ISInventoryPaneContextMenu.onDrinkFluid */
+            ISInventoryPaneContextMenu.onDrinkFluid(itemInInv, 0.25, playerObject)
+            if (returnToContainer != null && (returnToContainer != playerInv)) {
+                // return item to original container
+                ISTimedActionQueue.add(new ISInventoryTransferAction(playerObject, itemInInv, playerInv, returnToContainer, 0)) // time 0 = not specified
             }
         }
     } else if (_instanceof_(itemInInv, "HandWeapon") && itemInInv.getCondition() > 0) {

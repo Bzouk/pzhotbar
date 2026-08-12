@@ -1,23 +1,22 @@
 {
   "$schema": "https://raw.githubusercontent.com/Konijima/pzpw-config-schema/master/pzpw-config.schema.json",
   "mods": {
-    "pzhotbar": {
-      "name": "BzoukPzHotBarNew",
+    "pzhotbar42": {
+      "name": "BZQuickSlots",
       "description": "Mod add hot bar slot for items to use.",
       "url": "https://github.com/Bzouk/pzhotbar",
-      "modversion":"0.1.4",
-      "require":"bcUtils"
+      "modversion":"0.2.3"
     }
   },
   "workshop": {
-    "id": 3133189049,
-    "title": "BzoukPzHotBarNew",
+    "id": 3396010813,
+    "title": "BZQuickSlots",
     "visibility": "public",
     "mods": [
-      "pzhotbar"
+      "pzhotbar42"
     ],
     "tags": [
-      "Build 41",
+      "Build 42",
       "Interface"
     ],
     "author": [

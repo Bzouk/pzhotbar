@@ -17,7 +17,8 @@
     ]
   },
   "tstl": {
-    "noHeader": true
+    "noHeader": true,
+    "noImplicitSelf": true
   },
   "include": [
     "src/"

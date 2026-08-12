@@ -5,6 +5,8 @@ This repo was create bases on [Konijima template](https://github.com/Konijima/pz
 <br>
 # BzoukPzHotBarNew
 
+New mod structure for B42 https://pzwiki.net/wiki/Folders_structure.
+
 ## Description
 This is new version of my old mod. The functionality is essentially the same. 
 Do not use the old and new mod. !!!
@@ -20,7 +22,7 @@ New stuff:
 
 This mod adds quick access bar for items from player inventory. The main reason I made this mod is because I'm lazy to go through the inventory and look for one item that I just need. Mod idea is based another mod [Hotbar](https://steamcommunity.com/sharedfiles/filedetails/?id=503645367 ) for 5-20 often-used  and also other games (Wow EFT etc.). Mod is also using library "Blindcoders Modding Utility".
 
-Mod ID: pzhotbar
+Mod ID: pzhotbar42
 Workshop ID: 3133189049
 
 
@@ -38,3 +40,6 @@ Workshop ID: 3133189049
 - `npm run clean-project`: Clean your project generated content.
 - `npm run clean-cachedir-mods`: Clean your cachedir generated mod directories.
 - `npm run clean-cachedir-workshop`: Clean your cachedir generated workshop directory.
+
+## How to setup
+ https://github.com/Konijima/pzpw/wiki/Tutorial:-Creating-Project-Zomboid-mods-using-PZPW
