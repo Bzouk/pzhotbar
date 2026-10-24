@@ -1,6 +1,1 @@
-node_modules/
-/dts/
-/dist/
-/workshop/
-/assets/mods/test/
-/src/test/
+/build/
