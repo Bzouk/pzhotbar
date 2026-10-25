@@ -1,139 +1,91 @@
-[h1] Hot bar mod v2 [/h1]
-Hi everybody, 
+[h1]BZQuickSlots[/h1]
+Quick access bars for items. Drag an item into a slot and use it with one click — no more digging through a backpack inside a backpack for the one bandage you need.
 
-This is new version of my [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2434425002] old mod [/url] The functionality is essentially the same.
-[h3]Do not use the old and new mod at the same time. !!![/h3]
+[list]
+[*][b]Build 42.21+[/b], singleplayer
+[*]Multiplayer: should work, not tested
+[*]No dependencies — Mod Options are built into Build 42
+[/list]
 
-New stuff:
-- Code is in Typescript and then it's transcribed into Lua. Thank to [url=https://github.com/asledgehammer/PipeWrench-Template]PipeWrench[/url]
-- Same info panel about the item as in the inventory when hover over slot.
-- Hide delete button option
-- The mod imports settings from the old mod. (Old file name:bzhotbar.ini, new file name: pzhotbar.ini)
-- no HYPHEN in mod ID
+[h3]Do not run this alongside the older versions of the mod (links below). They fight over the same bars.[/h3]
 
-[h2] Same old description[/h2]
+[h2]What's new in 0.3.0[/h2]
+[list]
+[*]Rewritten in plain Lua for Build 42.21 (the TypeScript toolchain it used is dead)
+[*]Settings in the game's own Mod Options screen
+[*]Per-slot keybinds for bar 1, slots 1–9
+[*]Bar opacity, hide bars in a vehicle
+[*]Understands the Build 42 fluid system — slots show the fill level of bottles, drinking goes through the fluid API
+[*]Blindcoder's Modding Utility no longer required, its INI helpers ship inside the mod
+[/list]
 
-This mod adds quick access bar for items from player inventory. The main reason I made this mod is because I'm lazy to go through the inventory and look for one item that I just need. Mod idea is based another mod [url=https://steamcommunity.com/sharedfiles/filedetails/?id=503645367] Hotbar for 5-20 often-used [/url] and also other games (Wow EFT etc.). Mod is also using library "Blindcoders Modding Utility".
+[h2]Usage[/h2]
+[b]Tab[/b] shows and hides the bars. Bars drag around freely and use the same window frame as the inventory panel (X to hide, pin to collapse).
 
-[b] PZ: build 41 - singleplayer[/b]
+A slot holds an [i]item type[/i], not an item. Drag any item into a slot — you do not need to own it. The number on a slot counts non-broken items across every container on you, nested ones included (bandages in a first aid kit in a school bag still count). Broken items are ignored. Hovering a slot shows the same info panel as the inventory.
 
-The basic version of mod have one bar with 1 row and 8 columns. You can drag bar around. Bar is using same windows like inventory page (X for hide and pin for collapsable window).
-Also you can use [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2169435993]Mod Options[/url] to add more quick access bars. With modoptions mod you can set number of bars from 1 to 5. How many rows and columns for each bar will have. Also default key for toggle bars can be changed with modoptions ( default: tab )
+[u]Right click[/u] behaves exactly like right-clicking the item in the inventory.
 
-
-[h2] Usage[/h2]
-Pres "tab" for show/hide bars. Drag and drop item into slot. You dont need to have item in inventory to add it to slot. Slot counts non broken items in inventory ( number in slot example: (24) items in inventory  and in all containers that you have on you ( even in containers in containers like bandage in medkit in backpack))
-
-Broken items are iqnored, you have to go into inventory to work with them.
-
-[u]Right click[/u]: Same like in inventory window.
-
-[u]Left click[/u]  have smart functions based on item in slot. Functions are using code already in project zomboid. Many function return used item into original container.
-
-
-Example:
+[u]Left click[/u] does the sensible thing for that item type, using the game's own actions. Most actions put the item back where it came from when they finish:
 [code]
-1) Click slot with Disinfectant ( item is inside medkit in backpack)
-2) Disinfectant is moved to main inventory if needed
-3) Disinfectant is used on damaged parts
-4) Disinfectant is moved inside medkit in backpack if still exist.
+1) Click a slot holding Disinfectant (the bottle is in a medkit in your backpack)
+2) The bottle moves to your main inventory
+3) It is applied to your damaged body parts
+4) It goes back into the medkit in your backpack
 [/code]
-Note: If you cancel action, item will remain in main invetory (start running etc.).
+If you cancel the action (start running, etc.) the item stays in your main inventory.
 
-- Food
-  This works like double click in inventory (Cola, Chips, Cigarettes)
-  If food is non posion eat half or use whole if cigarettes ( need lighter :-) ) etc.
-  After use item returns to original container.
+[table]
+[tr][th]Item[/th][th]Left click[/th][/tr]
+[tr][td]Food[/td][td]Same as double-click in the inventory. Eats half, or the whole thing for cigarettes (needs a lighter).[/td][/tr]
+[tr][td]Water and beverages[/td][td]Drinks if you are thirsty and the fluid is not tainted.[/td][/tr]
+[tr][td]Pills (BetaBlock, AntiDeb, Sleeping Tablets, Vitamins)[/td][td]Takes one pill.[/td][/tr]
+[tr][td]Disinfectant, Alcohol Wipes[/td][td]Applies to every damaged body part that has no alcohol yet.[/td][/tr]
+[tr][td]Dish Cloth, Bath Towel[/td][td]Dries you off.[/td][/tr]
+[tr][td]Thread[/td][td]With a needle in your inventory, stitches all deep wounds.[/td][/tr]
+[tr][td]Hand weapon[/td][td]Equips it — two-handed if the weapon is. Optionally swaps whatever is in your hands into the weapon container.[/td][/tr]
+[tr][td]Bandage (any bandaging item)[/td][td]Cleans burns if the bandage is sterilised, otherwise bandages a damaged part.[/td][/tr]
+[tr][td]Clothing[/td][td]Equips it.[/td][/tr]
+[tr][td]Literature[/td][td]Starts reading.[/td][/tr]
+[tr][td]Suture Needle Holder, Tweezers[/td][td]Removes all glass and bullets from damaged parts.[/td][/tr]
+[tr][td]Suture Needle[/td][td]Stitches one deep wound.[/td][/tr]
+[tr][td]Comfrey Cataplasm[/td][td]Applies to a fractured part that has none.[/td][/tr]
+[tr][td]Wild Garlic Cataplasm[/td][td]Applies to one infected wound.[/td][/tr]
+[tr][td]Plantain Cataplasm[/td][td]Applies to one scratched, deep wounded or cut part.[/td][/tr]
+[tr][td]Splint[/td][td]Applies to a fractured part that has none.[/td][/tr]
+[tr][td]Radio[/td][td]Equips or unequips.[/td][/tr]
+[tr][td]Anything else[/td][td]Nothing — use right click.[/td][/tr]
+[/table]
 
-- Water
-  If item contain water, player is thirsty and water is not tainted then drink.
-  After use item returns to original container.
+Ideas worth binding: ammo (the count tells you how many rounds you have), an ammo box (right click to open), a watch (equip, then right click to set the alarm), crafting materials, and spears — click the slot to re-equip a fresh one the moment the old one breaks.
 
-- Pills (BetaBlock, AntiDeb, SleepingTablets and Vitamins)
-  Take pill. Same like right click but item is put in original container after use.
+[h2]Settings[/h2]
+Options → MODS → [i]Quick slots mod[/i]:
+[list]
+[*]Toggle keybind (default Tab)
+[*]Number of bars 1–5, rows and columns per bar 1–10
+[*]Slot size 45–90 px, bar opacity
+[*]Move weapons to the weapon container
+[*]Simple delete button, show delete button, show tooltip
+[*]Hide bars in a vehicle
+[*]Per-slot keybinds, bar 1 slots 1–9
+[/list]
+Settings are stored in pzhotbar.ini. On first run the mod imports the original mod's bzhotbar.ini if it finds one.
 
-- Disinfectant and AlcoholWipes
-  Apply alcohol on every damaged body part without alcohol.
-  After use item returns to original container.
+[h2]Languages[/h2]
+English, Czech, French (@Bobitec + Google), Spanish (@WhiteLotus + Google), Chinese, Russian.
 
-- DishCloth BathTowel
-  Like right click option - dry yourself with a towel
+[h2]Known issues — game features[/h2]
+[list]
+[*]Items that share a display name are grouped together by the game even when they are different items.
+[*]Right-click crafting needs the items in your main inventory or a bag.
+[/list]
 
-- Thread
-  If you have needle in inventory it will stitch all deep wounded body parts.
-  After use item returns to original container. (needle and thread)
+[h2]Older versions (Build 41)[/h2]
+[list]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=3133189049]BzoukPzHotBarNew[/url] — Build 41, TypeScript version
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=2434425002]Bzouk Hotbar Mod B41[/url] — the original Lua mod
+[/list]
 
-- Hand weapon
-  If two handed then equip two handed else one hand. New feature: swap weapon and item in hand to weapon container
-  Idea: spear -> broke -> click on slot with spears -> re equip new -> broke -> click on slot with spears -> re equip new
-
-- Bandage (should work on any item that can bandage)
-   Clean burns if bandage is strong or apply bandage on damaged part
-
-- Clothing
-  Equip right click - change to right etc.).
-
-- Literature
-  Start reading.
-
-- Suture Needle Holder or Tweezers
-  Remove all glass and bullets from damaged parts.
-  After use item returns to original container.
-
-- Suture needle
-  Stitch one deep wounded body part.
-  After use item returns to original container.
-
-- Comfrey Cataplasm
-  Apply to fractured body part without any comfrey.
-
-- Wild Garlic Cataplasm
-  Apply to one infected wound without any comfrey.
-
-- Plantain Cataplasm
-  Apply to one scratched, deep wounded or cut body part without any comfrey.
-
-- Splint
-  Apply to fractured body part without any splint.
-
-- Other items
-   Do nothing -> use right click
-
-- Radio
-  Equip/unequip radio
-
-Tips and ideas for items :
-- ammo -> counter how many bullets|shells
-- ammo box - right click -> open box
-- watches - Equip -> add to slot -> right click to set alarm etc.
-- items for quick crafting
-- do not forget items
-- spears -> broke -> left click -> re equip -> broke -> left click -> re equip  (need to throw away broken ones)
-- any item with info after right click (compass, radios gps...)
-...
-
-
-[h2] Summary [/h2]
-
-[b] PZ: build 41 beta only [/b]
-Required mods:
-[url=https://steamcommunity.com/workshop/filedetails/?id=503640135] blindcoders Modding Utility (saving data to ini) [/url]
-
-Optional mods:
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=2169435993]Mod Options[/url]
-
-Tab key for show/hide bar
-
-[h2] Languages[/h2]
-- english
-- czech
-- french - @Bobitec + google
-- spanish - @WhiteLotus + google
-- chinese
-- russian
-
-[h2] Known issues - game features[/h2]
-- some items in inventory have same name (group under same name), but they are different items
-- right click crafting need items to be in main inventory or backpack (game mechanic)
-
-Tags:B41,Interface
+[h2]Source[/h2]
+[url=https://github.com/Bzouk/pzhotbar]github.com/Bzouk/pzhotbar[/url] — MIT. The idea comes from [url=https://steamcommunity.com/sharedfiles/filedetails/?id=503645367]Hotbar for 5-20 often-used[/url] by Blindcoder, and from quickbars in other games.
