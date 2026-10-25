@@ -99,7 +99,7 @@ breaks.
 
 ## Settings
 
-Everything lives in the game's built-in **Mod Options** screen, under *Bz Quick slot mod*.
+Everything lives in the game's built-in Mod Options, under **Options → MODS → *Quick slots mod***.
 Build 42 provides that screen itself, so no extra mod is needed.
 
 ![Mod options](docs/screenshots/mod-options.jpg)
@@ -120,13 +120,14 @@ Build 42 provides that screen itself, so no extra mod is needed.
 
 ![Keybind in the options screen](docs/screenshots/mod-options-keybind.jpg)
 
-Settings are stored in `pzhotbar.ini`. On first run the mod imports the original Lua
-mod's `bzhotbar.ini` if it finds one.
+Slots, bar layout and settings are stored in `~/Zomboid/Lua/pzhotbar42.txt`. When that file
+does not exist yet, the mod imports `pzhotbar.ini` (0.2.x) or `bzhotbar.ini` (the original
+Lua mod).
 
 ## Installing
 
 Subscribe on the workshop, then enable **BZQuickSlots** in the mod list. No dependencies —
-Blindcoder's Modding Utility is no longer required, its INI helpers ship inside the mod.
+Blindcoder's Modding Utility is no longer required.
 
 **Do not run this alongside the older versions of the mod.** They fight over the same bars.
 
@@ -134,7 +135,7 @@ Blindcoder's Modding Utility is no longer required, its INI helpers ship inside 
 
 | Version | Build | Workshop | Source |
 |---|---|---|---|
-| BZQuickSlots (this one) | B42 | [3396010813](https://steamcommunity.com/sharedfiles/filedetails/?id=3396010813) | `main` |
+| BZQuickSlots 0.3.0 (this one) | B42.21+ | [3396010813](https://steamcommunity.com/sharedfiles/filedetails/?id=3396010813) | `main` |
 | BzoukPzHotBarNew | B41 | [3133189049](https://steamcommunity.com/sharedfiles/filedetails/?id=3133189049) | tag `v0.1.4-b41` |
 | Original Lua mod | B41 | [2434425002](https://steamcommunity.com/sharedfiles/filedetails/?id=2434425002) | archived repo `pz-bzoukhotbar` |
 
@@ -166,6 +167,12 @@ against the [Umbrella](https://github.com/PZ-Umbrella/Umbrella) typings, expecte
 
 ```bash
 scripts/check.sh
+```
+
+The config file reader and writer have a plain Lua test that runs outside the game:
+
+```bash
+lua tests/config_test.lua
 ```
 
 `scripts/build.sh` builds the Workshop item into `build/Workshop/BZQuickSlots`:
