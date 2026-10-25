@@ -8,6 +8,18 @@ Mod ID `pzhotbar42` · Build 42 · [Steam Workshop 3396010813](https://steamcomm
 
 ![Five bars placed around the screen](docs/screenshots/overview.jpg)
 
+## Contents
+
+- [What it does](#what-it-does)
+- [Using it](#using-it)
+- [Settings](#settings)
+- [Installing](#installing)
+- [Versions](#versions)
+- [Languages](#languages)
+- [Known issues](#known-issues)
+- [Building](#building)
+- [Credits](#credits)
+
 ## What it does
 
 A slot holds an *item type*, not an item. The item itself can stay wherever it lives —
@@ -143,30 +155,17 @@ English, Czech, French (@Bobitec + Google), Spanish (@WhiteLotus + Google), Chin
 
 ## Building
 
-Written in TypeScript and compiled to Lua with
-[PipeWrench](https://github.com/asledgehammer/PipeWrench) via
-[PZPW](https://github.com/Konijima/pzpw) and the
-[PZPW compiler](https://github.com/Konijima/pzpw-compiler). The repo started from the
-[Konijima template](https://github.com/Konijima/pzpw-template);
-its [tutorial](https://github.com/Konijima/pzpw/wiki/Tutorial:-Creating-Project-Zomboid-mods-using-PZPW)
-covers the setup.
+Plain Lua. `src/` holds the content of the mod's Build 42 folder (`mod.info`, images,
+`media/`). Up to 0.2.3 the mod was written in TypeScript with PipeWrench and PZPW; that
+code is kept under the tag `v0.2.3-ts`.
+
+Type checking runs [lua-language-server](https://github.com/LuaLS/lua-language-server)
+against the [Umbrella](https://github.com/PZ-Umbrella/Umbrella) typings, expected in
+`~/.local/share/umbrella` (see `.luarc.json`):
 
 ```bash
-npm install
-npm install -g pzpw-compiler   # or npm run install-compiler for the instructions
-npm run compile-mods           # build the mod into the game's cache dir
+scripts/check.sh
 ```
-
-| Script | Does |
-|---|---|
-| `npm run test-build` | Type-check only, no output |
-| `npm run compile-mods` | Compile the mods |
-| `npm run compile-workshop` | Compile for the workshop |
-| `npm run update-compiler` | Update the PZPW compiler |
-| `npm run clean-all` | Clean project and cache dir |
-| `npm run clean-project` | Clean generated project content |
-| `npm run clean-cachedir-mods` | Clean generated mod dirs in the cache dir |
-| `npm run clean-cachedir-workshop` | Clean the workshop dir in the cache dir |
 
 ## Credits
 
