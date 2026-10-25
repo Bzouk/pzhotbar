@@ -158,9 +158,10 @@ local function setWindosPos()
 end
 
 local function createWindows()
-    if not isInGame() or not ISBzHotBar.main.show then
+    if not isInGame() then
         return
     end
+    -- hidden bars are created too, or the toggle key has nothing to show after a reload
     for windowNum = 1, ISBzHotBar.main.activeWindows do
         local windowData = ISBzHotBar.windows[windowNum]
         local x = windowData.x or getCore():getScreenWidth() / 2 - 240
@@ -168,7 +169,7 @@ local function createWindows()
         local columns = windowData.columns
         local rows = windowData.rows
         local window = ISBzHotBarWindow:new(x, y, getHotBarWidth(columns), getHotBarHeight(rows), getHotBarSlotDimension(), windowNum, rows, columns, ISBzHotBar.items[windowNum], getDeleteText(), ISBzHotBar.main.showDeleteButton, ISBzHotBar.main.transferWeapons, ISBzHotBar.main.showToolTip, ISBzHotBar.main.opacity)
-        window:setVisible(true)
+        window:setVisible(ISBzHotBar.main.show)
         window:addToUIManager()
         windowsHolder[windowNum] = window
     end
