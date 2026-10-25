@@ -2,8 +2,9 @@ local ISBzHotBarWindow = require("pzhotbar/ISUI/ISBzHotBarWindow")
 local ConfigFile = require("pzhotbar/ConfigFile")
 
 local FONT_UI_SMALL = getTextManager():getFontHeight(UIFont.Small)
---- The config file, then the files of older versions, read only while the config file does not exist yet.
-local CONFIG_FILES = {"pzhotbar42.txt", "pzhotbar.ini", "bzhotbar.ini"}
+local CONFIG_FILE = "pzhotbar42.txt"
+--- Read in this order; the files of older versions only while CONFIG_FILE does not exist yet.
+local CONFIG_FILES = {CONFIG_FILE, "pzhotbar.ini", "bzhotbar.ini"}
 
 ---@class BzWindowData
 ---@field rows integer
@@ -63,6 +64,11 @@ local function str_to_bool(tex)
     return string.lower(tex) == "true"
 end
 
+--- No main screen yet while the game is starting.
+local function isInGame()
+    return MainScreen.instance ~= nil and MainScreen.instance.inGame
+end
+
 local function getDeleteText()
     if ISBzHotBar.main.showDeleteButton == false then
         return ""
@@ -90,36 +96,36 @@ end
 -- Config file
 
 local function saveConfig()
-    ConfigFile.write(CONFIG_FILES[1], ISBzHotBar)
+    ConfigFile.write(CONFIG_FILE, ISBzHotBar)
 end
 
 --- Copies settings, slot items and window layout read from a config file into ISBzHotBar.
-local function updateFromTable(ini)
-    local iniMain = ini.main or {}
+local function updateFromTable(data)
+    local dataMain = data.main or {}
     local main = ISBzHotBar.main
     -- a missing or broken value keeps the current one
-    main.activeWindows = tonumber(iniMain.activeWindows) or main.activeWindows
-    main.transferWeapons = str_to_bool(iniMain.transferWeapons)
-    main.slotsSize = tonumber(iniMain.slotsSize) or main.slotsSize
-    main.simpleDeleteButton = str_to_bool(iniMain.simpleDeleteButton)
-    main.showToolTip = str_to_bool(iniMain.showToolTip)
-    local iniItems = ini.items or {}
-    local iniWindows = ini.windows or {}
+    main.activeWindows = tonumber(dataMain.activeWindows) or main.activeWindows
+    main.transferWeapons = str_to_bool(dataMain.transferWeapons)
+    main.slotsSize = tonumber(dataMain.slotsSize) or main.slotsSize
+    main.simpleDeleteButton = str_to_bool(dataMain.simpleDeleteButton)
+    main.showToolTip = str_to_bool(dataMain.showToolTip)
+    local dataItems = data.items or {}
+    local dataWindows = data.windows or {}
     for i = 1, main.activeWindows do
         local iStr = tostring(i)
-        for key, value in pairs(iniItems[iStr] or {}) do
+        for key, value in pairs(dataItems[iStr] or {}) do
             local kk = tonumber(key)
             if kk then
                 ISBzHotBar.items[i][kk] = value
             end
         end
-        local iniWindow = iniWindows[iStr] or {}
+        local dataWindow = dataWindows[iStr] or {}
         local window = ISBzHotBar.windows[i]
-        window.rows = tonumber(iniWindow.rows) or window.rows
-        window.columns = tonumber(iniWindow.columns) or window.columns
-        if iniWindow.x and iniWindow.y then
-            window.x = tonumber(iniWindow.x)
-            window.y = tonumber(iniWindow.y)
+        window.rows = tonumber(dataWindow.rows) or window.rows
+        window.columns = tonumber(dataWindow.columns) or window.columns
+        if dataWindow.x and dataWindow.y then
+            window.x = tonumber(dataWindow.x)
+            window.y = tonumber(dataWindow.y)
         end
     end
 end
@@ -152,8 +158,7 @@ local function setWindosPos()
 end
 
 local function createWindows()
-    -- if not in game do no show; no main screen yet while the game is starting
-    if not (MainScreen.instance and MainScreen.instance.inGame) or not ISBzHotBar.main.show then
+    if not isInGame() or not ISBzHotBar.main.show then
         return
     end
     for windowNum = 1, ISBzHotBar.main.activeWindows do
@@ -269,7 +274,7 @@ local function IngameConfigSetup()
         Configs.keybindSlots[slot] = options:addKeyBind("pzhotbar42keybindpos" .. slot, getText("Keybind slot " .. (slot + 1) .. "."), Keyboard.KEY_NONE)
     end
     options.apply = function()
-        if not MainScreen.instance.inGame then
+        if not isInGame() then
             loadConfig()
             readConfigs()
             saveConfig()
