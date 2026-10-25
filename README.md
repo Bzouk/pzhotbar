@@ -135,7 +135,7 @@ Blindcoder's Modding Utility is no longer required.
 
 | Version | Build | Workshop | Source |
 |---|---|---|---|
-| BZQuickSlots 0.3.1 (this one) | B42.21+ | [3396010813](https://steamcommunity.com/sharedfiles/filedetails/?id=3396010813) | `main` |
+| BZQuickSlots 0.3.2 (this one) | B42.21+ | [3396010813](https://steamcommunity.com/sharedfiles/filedetails/?id=3396010813) | `main` |
 | BzoukPzHotBarNew | B41 | [3133189049](https://steamcommunity.com/sharedfiles/filedetails/?id=3133189049) | tag `v0.1.4-b41` |
 | Original Lua mod | B41 | [2434425002](https://steamcommunity.com/sharedfiles/filedetails/?id=2434425002) | archived repo `pz-bzoukhotbar` |
 
