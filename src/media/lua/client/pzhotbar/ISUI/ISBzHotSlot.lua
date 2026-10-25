@@ -180,8 +180,8 @@ function ISBzHotSlot:update()
         self.toolRender:initialise()
         self.toolRender:addToUIManager()
         self.toolRender:setVisible(true)
-        ---@diagnostic disable-next-line: param-type-mismatch
-        self.toolRender:setOwner(TutorialHelperFunctions)
+        -- 42.21 tooltips call owner:isReallyVisible() every frame, like the vanilla inventory pass the slot
+        self.toolRender:setOwner(self)
         self.toolRender:setCharacter(playerObject)
         self.toolRender.anchorBottomLeft = {x = self:getAbsoluteX(), y = self:getParent():getAbsoluteY()}
     end
@@ -198,6 +198,8 @@ function ISBzHotSlot:onRightMouseUp(x, y)
         return
     end
     local item = playerInventory:getBestEvalArgRecurse(predicateItem, predicateBestItem, self.itemInfo.itemFullName)
+    -- getPlayerNum is marked deprecated but vanilla 42.21 still uses it everywhere
+    ---@diagnostic disable-next-line: deprecated
     ISInventoryPaneContextMenu.createMenu(player:getPlayerNum(), true, {item}, self:getAbsoluteX() + x, self:getAbsoluteY() + y, self)
 end
 
@@ -253,7 +255,7 @@ function ISBzHotSlot:updateItem()
             itemInfo.color = {r = 0, g = 0.502, b = 0, a = 0.4}
         elseif condition >= 0.6 and condition <= 0.8 then
             itemInfo.color = {r = 0.678, g = 1, b = 0.184, a = 0.4}
-        elseif condition >= 0.2 and condition <= 0.4 then
+        elseif condition >= 0.2 and condition < 0.6 then
             itemInfo.color = {r = 1, g = 0.271, b = 0, a = 0.4}
         else
             itemInfo.color = {r = 1, g = 0, b = 0, a = 0.4}
@@ -322,7 +324,7 @@ function ISBzHotSlot:prerender()
     if itemInfo.isPoison then
         self:drawTexture(poisonIcon, 0, 0, 1, 1, 1, 1)
     elseif itemInfo.isFrozen then
-        self:drawTexture(frozenItemIcon, 0, 0, 0, 1, 1, 1, 1)
+        self:drawTexture(frozenItemIcon, 0, 0, 1, 1, 1, 1)
     end
     local text = "(" .. tostring(itemInfo.count) .. ")"
     local textHeight = getTextManager():MeasureStringY(UIFont.Small, text) + 1
@@ -342,9 +344,11 @@ local function takePill(playerObject, item, playerInv, returnToContainer)
     local mask = ISInventoryPaneContextMenu.getEatingMask(playerObject, true)
     -- take the pill
     ---@type ISBaseTimedAction
-    local lastAction = ISTakePillAction:new(playerObject, item, nil)
+    local lastAction = ISTakePillAction:new(playerObject, item)
     ISTimedActionQueue.add(lastAction)
     if mask then
+        -- same call as vanilla ISInventoryPaneContextMenu.takePill
+        ---@diagnostic disable-next-line: redundant-parameter, param-type-mismatch
         lastAction = ISWearClothing:new(playerObject, mask, 50)
         ISTimedActionQueue.add(lastAction)
     end
@@ -386,6 +390,7 @@ function ISBzHotSlot:activeteSlot()
     if playerObject:isAsleep() then
         return
     end
+    ---@diagnostic disable-next-line: deprecated
     local playerNumber = playerObject:getPlayerNum()
     local playerInv = playerObject:getInventory()
     -- search in inventory + backpack and container in inventory
@@ -400,7 +405,7 @@ function ISBzHotSlot:activeteSlot()
         if not item:isPoison() and not item:isFrozen() then
             if item:getHungChange() < 0 then
                 -- do not eat when full
-                if playerObject:getMoodles():getMoodleLevel(MoodleType.FoodEaten) >= 3 and playerObject:getNutrition():getCalories() >= 1000 then
+                if playerObject:getMoodles():getMoodleLevel(MoodleType.FOOD_EATEN) >= 3 and playerObject:getNutrition():getCalories() >= 1000 then
                     return
                 end
                 ISInventoryPaneContextMenu.onEatItems({item}, 0.5, playerNumber)
@@ -414,14 +419,11 @@ function ISBzHotSlot:activeteSlot()
         end
     elseif instanceof(item, "DrainableComboItem") then
         ---@cast item DrainableComboItem
-        if item:isWaterSource() and playerObject:getStats():getThirst() > 0.1 and not item:isTaintedWater() then
-            ISInventoryPaneContextMenu.onDrinkForThirst(item, playerObject)
-            returnItem(playerObject, item, playerInv, returnToContainer)
-        elseif ISInventoryPaneContextMenu.startWith(item:getType(), "Pills") then
+        if ISInventoryPaneContextMenu.startWith(item:getType(), "Pills") then
             takePill(playerObject, item, playerInv, returnToContainer)
         elseif item:getAlcoholPower() == 4 and (ISInventoryPaneContextMenu.startWith(item:getType(), "Disinfectant") or ISInventoryPaneContextMenu.startWith(item:getType(), "AlcoholWipes")) then
             disinfect(playerObject, item, playerInv, returnToContainer)
-        elseif (item:getType() == "DishCloth" or item:getType() == "BathTowel") and playerObject:getBodyDamage():getWetness() > 0 then
+        elseif (item:getType() == "DishCloth" or item:getType() == "BathTowel") and playerObject:getStats():get(CharacterStat.WETNESS) > 0 then
             ISInventoryPaneContextMenu.onDryMyself({item}, playerNumber)
         elseif item:getType() == "Thread" and item:getCurrentUsesFloat() >= 0 then
             local itemNeedle = playerInv:getFirstTypeRecurse("Needle")
@@ -446,21 +448,26 @@ function ISBzHotSlot:activeteSlot()
                 returnItem(playerObject, itemsSutureNeedleHolder, playerInv, sourceContainer(playerObject, itemsSutureNeedleHolder))
             end
         end
-    elseif ISInventoryPaneContextMenu.startWith(item:getType(), "Pills") or item:hasTag("Pills") or item:hasTag("Consumable") then
+    elseif ISInventoryPaneContextMenu.startWith(item:getType(), "Pills") or item:hasTag(ItemTag.CONSUMABLE) then
         takePill(playerObject, item, playerInv, returnToContainer)
     elseif item:hasComponent(ComponentType.FluidContainer) then
         local fluidcontainer = item:getFluidContainer()
         local primaryFluid = fluidcontainer:getPrimaryFluid()
+        -- an empty container has no primary fluid
+        local fluidType = primaryFluid and primaryFluid:getFluidTypeString()
         if fluidcontainer:getProperties():getAlcohol() > 0.15 and fluidcontainer:getAmount() > 0.15 then
             disinfect(playerObject, item, playerInv, returnToContainer)
-        elseif (item:isWaterSource() or (primaryFluid and primaryFluid:getFluidTypeString() == "Water" or primaryFluid:getFluidTypeString() == "CarbonatedWater")) and playerObject:getStats():getThirst() > 0.1 then
-            if primaryFluid:getFluidTypeString() == "TaintedWater" then
+        elseif (item:isWaterSource() or fluidType == "Water" or fluidType == "CarbonatedWater") and playerObject:getStats():get(CharacterStat.THIRST) > 0.1 then
+            -- like the vanilla double click: skip known tainted or sealed water, drink what the thirst needs
+            local amount = fluidcontainer:getAmount()
+            if fluidType == "TaintedWater" or fluidcontainer:isTaintedStatusKnown() or item:isSealed() or amount <= 0 then
                 return
             end
-            ISInventoryPaneContextMenu.onDrinkForThirst(item, playerObject)
+            local units = math.min(playerObject:getStats():get(CharacterStat.THIRST) * 2, amount)
+            ISInventoryPaneContextMenu.onDrinkFluid(item, units / amount, playerObject)
             returnItem(playerObject, item, playerInv, returnToContainer)
-        elseif primaryFluid:isCategory(FluidCategory.Beverage) then
-            if not fluidcontainer:canPlayerEmpty() or playerObject:getMoodleLevel(MoodleType.FoodEaten) >= 3 and playerObject:getNutrition():getCalories() >= 1000 or fluidcontainer:getCapacity() > 3 then
+        elseif primaryFluid and primaryFluid:isCategory(FluidCategory.Beverage) then
+            if not fluidcontainer:canPlayerEmpty() or item:isSealed() or fluidcontainer:isEmpty() or fluidcontainer:isTaintedStatusKnown() or playerObject:getMoodleLevel(MoodleType.FOOD_EATEN) >= 3 and playerObject:getNutrition():getCalories() >= 1000 or fluidcontainer:getCapacity() > 3 then
                 return
             end
             ISInventoryPaneContextMenu.onDrinkFluid(item, 0.25, playerObject)
@@ -478,8 +485,8 @@ function ISBzHotSlot:activeteSlot()
         else
             equipped = equipPrimary(playerObject, item, playerNumber)
         end
-        -- put the weapon that was in hand back to the bag the new one came from
-        if equipped and itemsInHand and not fromHotBar then
+        -- "Move weapons" option: put the weapon that was in hand back to the bag the new one came from
+        if self.transferWeapons and equipped and itemsInHand and not fromHotBar then
             returnItem(playerObject, itemsInHand, playerInv, returnToContainer)
         end
     elseif instanceof(item, "Radio") and not instanceof(item, "HandWeapon") then
@@ -511,13 +518,13 @@ function ISBzHotSlot:activeteSlot()
         else
             ISInventoryPaneContextMenu.onWearItems({item}, playerNumber)
         end
-    elseif item:getCategory() == "Literature" and not item:canBeWrite() and not playerObject:getCharacterTraits():isIlliterate() then
+    elseif item:getCategory() == "Literature" and not (item --[[@as Literature]]):canBeWrite() and not playerObject:hasTrait(CharacterTrait.ILLITERATE) then
         ISInventoryPaneContextMenu.onLiteratureItems({item}, playerNumber)
     elseif item:getType() == "SutureNeedleHolder" or item:getType() == "Tweezers" then
         for _, bodyPart in ipairs(haveDamagePart(playerObject)) do
             if bodyPart:haveGlass() then
                 ISInventoryPaneContextMenu.transferIfNeeded(playerObject, item)
-                ISTimedActionQueue.add(ISRemoveGlass:new(playerObject, playerObject, bodyPart, nil))
+                ISTimedActionQueue.add(ISRemoveGlass:new(playerObject, playerObject, bodyPart, false))
             elseif bodyPart:haveBullet() then
                 ISInventoryPaneContextMenu.transferIfNeeded(playerObject, item)
                 ISTimedActionQueue.add(ISRemoveBullet:new(playerObject, playerObject, bodyPart))
@@ -538,13 +545,13 @@ function ISBzHotSlot:activeteSlot()
         end)
     elseif item:getType() == "WildGarlicCataplasm" then
         applyToFirstPart(playerObject, item, function(bodyPart)
-            return bodyPart:isInfectedWound() and bodyPart:getComfreyFactor() == 0 and bodyPart:getComfreyFactor() == 0 and bodyPart:getPlantainFactor() == 0
+            return bodyPart:isInfectedWound() and bodyPart:getComfreyFactor() == 0 and bodyPart:getGarlicFactor() == 0 and bodyPart:getPlantainFactor() == 0
         end, function(bodyPart)
             return ISGarlicCataplasm:new(playerObject, playerObject, item, bodyPart)
         end)
     elseif item:getType() == "PlantainCataplasm" then
         applyToFirstPart(playerObject, item, function(bodyPart)
-            return bodyPart:scratched() or bodyPart:isDeepWounded() or bodyPart:isCut() and bodyPart:getComfreyFactor() == 0 and bodyPart:getComfreyFactor() == 0 and bodyPart:getPlantainFactor() == 0
+            return (bodyPart:scratched() or bodyPart:isDeepWounded() or bodyPart:isCut()) and bodyPart:getComfreyFactor() == 0 and bodyPart:getGarlicFactor() == 0 and bodyPart:getPlantainFactor() == 0
         end, function(bodyPart)
             return ISPlantainCataplasm:new(playerObject, playerObject, item, bodyPart)
         end)

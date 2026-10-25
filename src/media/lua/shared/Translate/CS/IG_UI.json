@@ -1,0 +1,18 @@
+{
+    "IGUI_Bz_Fast_HotBar_MaxTables_Name": "Max tabulek.",
+    "IGUI_Bz_Fast_HotBar_MaxTables_Tooltip": "Počet tabulek co se zobrazí. 1 až 5.",
+    "IGUI_Bz_Fast_HotBar_DropdownX_Name": "Řadky tabulky ",
+    "IGUI_Bz_Fast_HotBar_DropdownX_Tooltip": "Počet řádku tabulky. 1 až 10.",
+    "IGUI_Bz_Fast_HotBar_DropdownY_Name": "Sloupce tabulky ",
+    "IGUI_Bz_Fast_HotBar_DropdownY_Tooltip": "Počet sloupců tabulky. 1 až 10.",
+    "IGUI_Bz_Fast_HotBar_CheckBox_Move_Weapons_Name": "Swap u zbraní.",
+    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Move_Weapons": "Pří kliknutí na zbraň se přehodí aktuálně držená věc a přesune se do kontaineru kde byla zbraň. Pokud je věc v hotbaru z PZ a nebo pokud nemá kontainer místo tak se věc nepřesunuje.",
+    "IGUI_Bz_Fast_HotBar_SlotSize_Name": "Velikost slotu",
+    "IGUI_Bz_Fast_HotBar_SlotSize_Tooltip": "Nastavi velikost slotu. Pokud je font nastaven na větší tak se okno přizpůsobí fontu",
+    "IGUI_Bz_Fast_HotBar_CheckBox_Show_Delete": "Zobrazit delete tlačítko",
+    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_Delete": "Zobrazí tlačítko delete u slotu.",
+    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Simple_Delete": "Nahraďte text tlačítka pro odstranění znakem X.",
+    "IGUI_Bz_Fast_HotBar_CheckBox_Simple_Delete": "Jednoduché tlačítko pro odstranění.",
+    "IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip": "Zobrazit nápovědu ve slotu",
+    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Zobrazení okna s nápovědou jako v inventáři."
+}
