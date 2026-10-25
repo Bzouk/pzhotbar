@@ -18,6 +18,7 @@ Mod ID `pzhotbar42` · Build 42 · [Steam Workshop 3396010813](https://steamcomm
 - [Languages](#languages)
 - [Known issues](#known-issues)
 - [Building](#building)
+  - [Testing in the game](#testing-in-the-game)
 - [Credits](#credits)
 
 ## What it does
@@ -166,6 +167,30 @@ against the [Umbrella](https://github.com/PZ-Umbrella/Umbrella) typings, expecte
 ```bash
 scripts/check.sh
 ```
+
+`scripts/build.sh` builds the Workshop item into `build/Workshop/BZQuickSlots`:
+`workshop.txt` (fixed keys from `assets/workshop/workshop.txt`, the description from
+`assets/workshop/description.txt`), `preview.png` and `Contents/mods/pzhotbar42/42/`.
+
+### Testing in the game
+
+The game reads items under development from `~/Zomboid/Workshop`. Link the build there
+once; after that every `scripts/build.sh` is live on the next game start:
+
+```bash
+ln -s /path/to/pzhotbar/build/Workshop/BZQuickSlots ~/Zomboid/Workshop/BZQuickSlots
+```
+
+The game and its uploader follow the link (checked on 42.21). Where a link is not an option, copy after each build instead:
+
+```bash
+rsync -a --delete /path/to/pzhotbar/build/Workshop/BZQuickSlots/ ~/Zomboid/Workshop/BZQuickSlots/
+```
+
+Unsubscribe from the Workshop item and keep no `pzhotbar42` in `~/Zomboid/mods` while
+testing, or the game loads two copies. Lua errors land in `~/Zomboid/console.txt`.
+Uploading goes through the in-game uploader (main menu → Workshop), which replaces the
+whole Steam description with the one in `workshop.txt`.
 
 ## Credits
 

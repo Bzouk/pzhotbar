@@ -1,0 +1,5 @@
+version=1
+id=3396010813
+title=BZQuickSlots
+tags=Build 42;Interface
+visibility=public
