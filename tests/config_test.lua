@@ -1,5 +1,8 @@
 -- Plain Lua check of pzhotbar/ConfigFile outside the game: lua tests/config_test.lua
 package.path = "src/media/lua/client/?.lua;" .. package.path
+-- the game's Kahlua lacks these; any use fails here like in the game
+---@diagnostic disable-next-line: assign-type-mismatch
+next, unpack, table.unpack = nil, nil, nil
 
 -- in-memory stand-ins for the game's file API
 local files = {}
@@ -42,6 +45,6 @@ assert(old.items["1"]["3"] == "Base.Pills")
 assert(old.windows["1"].rows == "2")
 
 -- missing file
-assert(next(ConfigFile.read("missing.txt")) == nil)
+for _ in pairs(ConfigFile.read("missing.txt")) do error("missing file read as non-empty") end
 
 print("config_test ok")

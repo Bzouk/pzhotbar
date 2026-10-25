@@ -128,7 +128,8 @@ end
 local function loadConfig()
     for _, file in ipairs(CONFIG_FILES) do
         local data = ConfigFile.read(file)
-        if next(data) then
+        -- Kahlua has no next(); an empty table skips the loop
+        for _ in pairs(data) do
             updateFromTable(data)
             return
         end
