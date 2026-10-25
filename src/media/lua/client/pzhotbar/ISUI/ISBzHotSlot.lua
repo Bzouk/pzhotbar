@@ -17,8 +17,6 @@
 ---@field transferWeapons boolean
 ---@field toolRender ISToolTipInv?
 ---@field showToolTip boolean
----@field worstItemsFirtst boolean
----@field itemFromInv boolean? never set, getItem always takes the first unbroken item
 local ISBzHotSlot = ISPanel:derive("ISBzHotSlot")
 
 local function predicateNotBroken(item)
@@ -45,10 +43,6 @@ local function predicateBestItem(item1, item2)
         scoreItem2 = scoreItem2 + items2Connt:getFilledRatio()
         return scoreItem1 - scoreItem2
     end
-    return item2:getCondition() - item1:getCondition()
-end
-
-local function predicateWorstConditon(item1, item2)
     return item2:getCondition() - item1:getCondition()
 end
 
@@ -99,7 +93,6 @@ function ISBzHotSlot:new(x, y, width, height, itemTable, slot, deleteButText, sh
     o.showDelete = showDelete
     o.transferWeapons = transferWeapons
     o.showToolTip = showToolTip
-    o.worstItemsFirtst = true
     return o
 end
 
@@ -187,13 +180,6 @@ function ISBzHotSlot:update()
         self.toolRender.anchorBottomLeft = {x = self:getAbsoluteX(), y = self:getParent():getAbsoluteY()}
     end
     self.toolRender.followMouse = true
-end
-
-function ISBzHotSlot:getItem(playerInventory, itemFullName)
-    if self.itemFromInv then
-        return playerInventory:getBestEvalArgRecurse(predicateItem, predicateWorstConditon, itemFullName)
-    end
-    return playerInventory:getFirstTypeEvalRecurse(itemFullName, predicateNotBroken)
 end
 
 function ISBzHotSlot:onRightMouseUp(x, y)

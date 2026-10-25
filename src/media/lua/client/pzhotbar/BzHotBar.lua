@@ -5,23 +5,16 @@ local bcUtils = require("pzhotbar/bcUtils")
 -- Constants
 
 local Constants = {
-    TABLE_BZHOTBAR = "bzHotBar",
-    TABLE_CONFIG = "config",
-    TABLE_ITEMS = "items",
-    TABLE_WINDOWS = "windows",
     TABLE_MAIN = "main",
     TABLE_ARRAY_ITEMS = "items",
     TABLE_ARRAY_WINDOWS = "windows",
     TABLE_SLOT_ROWS = "rows",
     TABLE_SLOT_COLUMNS = "columns",
     TABLE_SLOT_ACTIVEWINDOWS = "activeWindows",
-    TABLE_SLOT_SHOW = "show",
     TABLE_SLOT_TRANSFERWEAPONS = "transferWeapons",
     TABLE_SLOT_SIMPLEDELETEBUTTON = "simpleDeleteButton",
-    TABLE_SLOT_SHOWDELETEBUTTON = "showDeleteButton",
     TABLE_SLOT_SHOWTOLLTIP = "showToolTip",
     TABLE_SLOT_SLOTSIZE = "slotsSize",
-    TABLE_SLOT_SLOTSIZES = "slotsSizes",
 }
 
 local FONT_UI_SMALL = getTextManager():getFontHeight(UIFont.Small)
@@ -46,7 +39,6 @@ local ConfigSuffix = ".ini"
 ---@field slotsSize number
 ---@field opacity number
 ---@field hideCar boolean
----@field slotsSizes number[]
 
 --- Data saved to the INI file: item full names per window and slot, window layout, settings.
 ---@class BzHotBarData
@@ -72,7 +64,6 @@ ISBzHotBar.main = {
     slotsSize = 65,
     opacity = 1,
     hideCar = false,
-    slotsSizes = {60, 65, 70, 75, 80, 85, 90, 55, 50, 45, 40},
 }
 
 --- Open windows by window number.

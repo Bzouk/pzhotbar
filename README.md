@@ -8,6 +8,18 @@ Mod ID `pzhotbar42` · Build 42 · [Steam Workshop 3396010813](https://steamcomm
 
 ![Five bars placed around the screen](docs/screenshots/overview.jpg)
 
+## Contents
+
+- [What it does](#what-it-does)
+- [Using it](#using-it)
+- [Settings](#settings)
+- [Installing](#installing)
+- [Versions](#versions)
+- [Languages](#languages)
+- [Known issues](#known-issues)
+- [Building](#building)
+- [Credits](#credits)
+
 ## What it does
 
 A slot holds an *item type*, not an item. The item itself can stay wherever it lives —
