@@ -459,15 +459,15 @@ function ISBzHotSlot:activeteSlot()
             disinfect(playerObject, item, playerInv, returnToContainer)
         elseif (item:isWaterSource() or fluidType == "Water" or fluidType == "CarbonatedWater") and playerObject:getStats():get(CharacterStat.THIRST) > 0.1 then
             -- like the vanilla double click: skip known tainted or sealed water, drink what the thirst needs
-            if fluidType == "TaintedWater" or fluidcontainer:isTaintedStatusKnown() or item:isSealed() then
+            local amount = fluidcontainer:getAmount()
+            if fluidType == "TaintedWater" or fluidcontainer:isTaintedStatusKnown() or item:isSealed() or amount <= 0 then
                 return
             end
-            local amount = fluidcontainer:getAmount()
             local units = math.min(playerObject:getStats():get(CharacterStat.THIRST) * 2, amount)
             ISInventoryPaneContextMenu.onDrinkFluid(item, units / amount, playerObject)
             returnItem(playerObject, item, playerInv, returnToContainer)
         elseif primaryFluid and primaryFluid:isCategory(FluidCategory.Beverage) then
-            if not fluidcontainer:canPlayerEmpty() or item:isSealed() or playerObject:getMoodleLevel(MoodleType.FOOD_EATEN) >= 3 and playerObject:getNutrition():getCalories() >= 1000 or fluidcontainer:getCapacity() > 3 then
+            if not fluidcontainer:canPlayerEmpty() or item:isSealed() or fluidcontainer:isEmpty() or fluidcontainer:isTaintedStatusKnown() or playerObject:getMoodleLevel(MoodleType.FOOD_EATEN) >= 3 and playerObject:getNutrition():getCalories() >= 1000 or fluidcontainer:getCapacity() > 3 then
                 return
             end
             ISInventoryPaneContextMenu.onDrinkFluid(item, 0.25, playerObject)
