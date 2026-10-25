@@ -4,8 +4,6 @@ local ISBzHotSlot = require("pzhotbar/ISUI/ISBzHotSlot")
 ---@field slotSize number
 ---@field slots table<integer, ISBzHotSlot>
 ---@field itemTable table<integer, string>
----@field slotPad number
----@field margins number
 ---@field windowNum integer
 ---@field rows integer
 ---@field columns integer
@@ -14,6 +12,9 @@ local ISBzHotSlot = require("pzhotbar/ISUI/ISBzHotSlot")
 ---@field transferWeapons boolean
 ---@field showToolTip boolean
 local ISBzHotBarWindow = ISCollapsableWindow:derive("ISBzHotBarWindow")
+
+local SLOT_PAD = 2
+local SLOT_MARGIN = 1
 
 ---@return ISBzHotBarWindow
 function ISBzHotBarWindow:new(x, y, width, height, slotSize, windowNum, rows, columns, itemTable, deleteButText, showDelete, transferWeapons, showToolTip, opacity)
@@ -27,8 +28,6 @@ function ISBzHotBarWindow:new(x, y, width, height, slotSize, windowNum, rows, co
     o.slotSize = slotSize
     o.slots = {}
     o.itemTable = itemTable
-    o.slotPad = 2
-    o.margins = 1
     o.windowNum = windowNum
     o.rows = rows
     o.columns = columns
@@ -43,11 +42,11 @@ end
 function ISBzHotBarWindow:createChildren()
     ISCollapsableWindow.createChildren(self)
     local tbw = self:titleBarHeight()
-    local offx = self.slotSize
+    local size = self.slotSize
     local i = 0
     for y = 0, self.rows - 1 do
         for x = 0, self.columns - 1 do
-            local slot = ISBzHotSlot:new(offx * x + self.slotPad, tbw + y * self.slotSize, offx - self.margins, self.slotSize - self.margins, self.itemTable, i, self.deleteButString, self.showDelete, self.transferWeapons, self.showToolTip, self.backgroundColor.a)
+            local slot = ISBzHotSlot:new(size * x + SLOT_PAD, tbw + y * size, size - SLOT_MARGIN, size - SLOT_MARGIN, self.itemTable, i, self.deleteButString, self.showDelete, self.transferWeapons, self.showToolTip, self.backgroundColor.a)
             self:addChild(slot)
             self.slots[i] = slot
             i = i + 1
@@ -56,17 +55,14 @@ function ISBzHotBarWindow:createChildren()
 end
 
 function ISBzHotBarWindow:updateItems()
-    for i = 0, self.rows * self.columns - 1 do
-        local slot = self.slots[i]
-        if slot ~= nil then
-            slot:updateItem()
-        end
+    for _, slot in pairs(self.slots) do
+        slot:updateItem()
     end
 end
 
 function ISBzHotBarWindow:activateSlot(pos)
     local slot = self.slots[pos]
-    if slot ~= nil and pos < self.rows * self.columns then
+    if slot ~= nil then
         slot:activeteSlot()
     end
 end
