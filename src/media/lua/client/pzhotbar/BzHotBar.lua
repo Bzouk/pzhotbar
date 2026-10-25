@@ -170,7 +170,9 @@ local function createWindows()
         local rows = windowData.rows
         local window = ISBzHotBarWindow:new(x, y, getHotBarWidth(columns), getHotBarHeight(rows), getHotBarSlotDimension(), windowNum, rows, columns, ISBzHotBar.items[windowNum], getDeleteText(), ISBzHotBar.main.showDeleteButton, ISBzHotBar.main.transferWeapons, ISBzHotBar.main.showToolTip, ISBzHotBar.main.opacity)
         window:setVisible(ISBzHotBar.main.show)
-        window:addToUIManager()
+        if ISBzHotBar.main.show then
+            window:addToUIManager()
+        end
         windowsHolder[windowNum] = window
     end
 end
@@ -184,9 +186,17 @@ local function reloadWindows()
     createWindows()
 end
 
+--- Hidden bars leave the UI manager, or the game keeps calling update() on every slot.
 local function showWindows(showWin)
     for _, window in pairs(windowsHolder) do
-        window:setVisible(showWin)
+        if window:getIsVisible() ~= showWin then
+            window:setVisible(showWin)
+            if showWin then
+                window:addToUIManager()
+            else
+                window:removeFromUIManager()
+            end
+        end
     end
     ISBzHotBar.main.show = showWin
 end
