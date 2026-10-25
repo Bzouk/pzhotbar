@@ -2,9 +2,8 @@ local ISBzHotBarWindow = require("pzhotbar/ISUI/ISBzHotBarWindow")
 local ConfigFile = require("pzhotbar/ConfigFile")
 
 local FONT_UI_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local CONFIG_FILE = "pzhotbar42.txt"
---- Files of older versions, read only while CONFIG_FILE does not exist yet.
-local OLD_CONFIG_FILES = {"pzhotbar.ini", "bzhotbar.ini"}
+--- The config file, then the files of older versions, read only while the config file does not exist yet.
+local CONFIG_FILES = {"pzhotbar42.txt", "pzhotbar.ini", "bzhotbar.ini"}
 
 ---@class BzWindowData
 ---@field rows integer
@@ -23,7 +22,7 @@ local OLD_CONFIG_FILES = {"pzhotbar.ini", "bzhotbar.ini"}
 ---@field opacity number
 ---@field hideCar boolean
 
---- Data saved to CONFIG_FILE: item full names per window and slot, window layout, settings.
+--- Data saved to the config file: item full names per window and slot, window layout, settings.
 ---@class BzHotBarData
 ---@field items table<integer, table<integer, string>>
 ---@field windows table<integer, BzWindowData>
@@ -91,7 +90,7 @@ end
 -- Config file
 
 local function saveConfig()
-    ConfigFile.write(CONFIG_FILE, ISBzHotBar)
+    ConfigFile.write(CONFIG_FILES[1], ISBzHotBar)
 end
 
 --- Copies settings, slot items and window layout read from a config file into ISBzHotBar.
@@ -125,9 +124,9 @@ local function updateFromTable(ini)
     end
 end
 
---- Loads CONFIG_FILE, or the first old config file found when it is missing.
+--- Loads the first config file found, the current one first.
 local function loadConfig()
-    for _, file in ipairs({CONFIG_FILE, unpack(OLD_CONFIG_FILES)}) do
+    for _, file in ipairs(CONFIG_FILES) do
         local data = ConfigFile.read(file)
         if next(data) then
             updateFromTable(data)
@@ -152,8 +151,8 @@ local function setWindosPos()
 end
 
 local function createWindows()
-    -- if not in game do no show
-    if not MainScreen.instance.inGame or not ISBzHotBar.main.show then
+    -- if not in game do no show; no main screen yet while the game is starting
+    if not (MainScreen.instance and MainScreen.instance.inGame) or not ISBzHotBar.main.show then
         return
     end
     for windowNum = 1, ISBzHotBar.main.activeWindows do
