@@ -180,8 +180,8 @@ function ISBzHotSlot:update()
         self.toolRender:initialise()
         self.toolRender:addToUIManager()
         self.toolRender:setVisible(true)
-        ---@diagnostic disable-next-line: param-type-mismatch
-        self.toolRender:setOwner(TutorialHelperFunctions)
+        -- 42.21 tooltips call owner:isReallyVisible() every frame, like the vanilla inventory pass the slot
+        self.toolRender:setOwner(self)
         self.toolRender:setCharacter(playerObject)
         self.toolRender.anchorBottomLeft = {x = self:getAbsoluteX(), y = self:getParent():getAbsoluteY()}
     end
