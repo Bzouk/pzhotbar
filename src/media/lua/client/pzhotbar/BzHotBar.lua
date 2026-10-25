@@ -109,6 +109,8 @@ local function updateFromTable(data)
     main.slotsSize = tonumber(dataMain.slotsSize) or main.slotsSize
     main.simpleDeleteButton = str_to_bool(dataMain.simpleDeleteButton)
     main.showToolTip = str_to_bool(dataMain.showToolTip)
+    -- bars hidden with the toggle key stay hidden; files without the key show them
+    main.show = dataMain.show == nil or str_to_bool(dataMain.show)
     local dataItems = data.items or {}
     local dataWindows = data.windows or {}
     for i = 1, main.activeWindows do
