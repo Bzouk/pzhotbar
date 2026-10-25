@@ -1,9 +1,10 @@
 local ISBzHotBarWindow = require("pzhotbar/ISUI/ISBzHotBarWindow")
-local bcUtils = require("pzhotbar/bcUtils")
+local ConfigFile = require("pzhotbar/ConfigFile")
 
 local FONT_UI_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local CONFIG_FILE = "pzhotbar.ini"
-local CONFIG_FILE_OLD = "bzhotbar.ini"
+local CONFIG_FILE = "pzhotbar42.txt"
+--- Files of older versions, read only while CONFIG_FILE does not exist yet.
+local OLD_CONFIG_FILES = {"pzhotbar.ini", "bzhotbar.ini"}
 
 ---@class BzWindowData
 ---@field rows integer
@@ -22,7 +23,7 @@ local CONFIG_FILE_OLD = "bzhotbar.ini"
 ---@field opacity number
 ---@field hideCar boolean
 
---- Data saved to the INI file: item full names per window and slot, window layout, settings.
+--- Data saved to CONFIG_FILE: item full names per window and slot, window layout, settings.
 ---@class BzHotBarData
 ---@field items table<integer, table<integer, string>>
 ---@field windows table<integer, BzWindowData>
@@ -90,10 +91,10 @@ end
 -- Config file
 
 local function saveConfig()
-    bcUtils.writeINI(CONFIG_FILE, ISBzHotBar)
+    ConfigFile.write(CONFIG_FILE, ISBzHotBar)
 end
 
---- Copies settings, slot items and window layout read from the INI file into ISBzHotBar.
+--- Copies settings, slot items and window layout read from a config file into ISBzHotBar.
 local function updateFromTable(ini)
     local iniMain = ini.main or {}
     local main = ISBzHotBar.main
@@ -124,14 +125,14 @@ local function updateFromTable(ini)
     end
 end
 
---- Loads the new config file, or the old one when the new one is missing.
+--- Loads CONFIG_FILE, or the first old config file found when it is missing.
 local function loadConfig()
-    local ini = bcUtils.readINI(CONFIG_FILE)
-    if bcUtils.tableIsEmpty(ini) then
-        ini = bcUtils.readINI(CONFIG_FILE_OLD)
-    end
-    if not bcUtils.tableIsEmpty(ini) then
-        updateFromTable(ini)
+    for _, file in ipairs({CONFIG_FILE, unpack(OLD_CONFIG_FILES)}) do
+        local data = ConfigFile.read(file)
+        if next(data) then
+            updateFromTable(data)
+            return
+        end
     end
 end
 

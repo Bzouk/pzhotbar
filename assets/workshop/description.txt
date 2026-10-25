@@ -16,7 +16,7 @@ Quick access bars for items. Drag an item into a slot and use it with one click 
 [*]Per-slot keybinds for bar 1, slots 1–9
 [*]Bar opacity, hide bars in a vehicle
 [*]Understands the Build 42 fluid system — slots show the fill level of bottles, drinking goes through the fluid API
-[*]Blindcoder's Modding Utility no longer required, its INI helpers ship inside the mod
+[*]Blindcoder's Modding Utility no longer required
 [/list]
 
 [h2]Usage[/h2]
@@ -70,7 +70,7 @@ Options → MODS → [i]Quick slots mod[/i]:
 [*]Hide bars in a vehicle
 [*]Per-slot keybinds, bar 1 slots 1–9
 [/list]
-Settings are stored in pzhotbar.ini. On first run the mod imports the original mod's bzhotbar.ini if it finds one.
+Slots, bar layout and settings are stored in Zomboid/Lua/pzhotbar42.txt. On first run the mod imports the settings of the older versions (pzhotbar.ini, bzhotbar.ini).
 
 [h2]Languages[/h2]
 English, Czech, French (@Bobitec + Google), Spanish (@WhiteLotus + Google), Chinese, Russian.
