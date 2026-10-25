@@ -253,7 +253,7 @@ function ISBzHotSlot:updateItem()
             itemInfo.color = {r = 0, g = 0.502, b = 0, a = 0.4}
         elseif condition >= 0.6 and condition <= 0.8 then
             itemInfo.color = {r = 0.678, g = 1, b = 0.184, a = 0.4}
-        elseif condition >= 0.2 and condition <= 0.4 then
+        elseif condition >= 0.2 and condition < 0.6 then
             itemInfo.color = {r = 1, g = 0.271, b = 0, a = 0.4}
         else
             itemInfo.color = {r = 1, g = 0, b = 0, a = 0.4}
@@ -322,7 +322,7 @@ function ISBzHotSlot:prerender()
     if itemInfo.isPoison then
         self:drawTexture(poisonIcon, 0, 0, 1, 1, 1, 1)
     elseif itemInfo.isFrozen then
-        self:drawTexture(frozenItemIcon, 0, 0, 0, 1, 1, 1, 1)
+        self:drawTexture(frozenItemIcon, 0, 0, 1, 1, 1, 1)
     end
     local text = "(" .. tostring(itemInfo.count) .. ")"
     local textHeight = getTextManager():MeasureStringY(UIFont.Small, text) + 1
@@ -451,15 +451,17 @@ function ISBzHotSlot:activeteSlot()
     elseif item:hasComponent(ComponentType.FluidContainer) then
         local fluidcontainer = item:getFluidContainer()
         local primaryFluid = fluidcontainer:getPrimaryFluid()
+        -- an empty container has no primary fluid
+        local fluidType = primaryFluid and primaryFluid:getFluidTypeString()
         if fluidcontainer:getProperties():getAlcohol() > 0.15 and fluidcontainer:getAmount() > 0.15 then
             disinfect(playerObject, item, playerInv, returnToContainer)
-        elseif (item:isWaterSource() or (primaryFluid and primaryFluid:getFluidTypeString() == "Water" or primaryFluid:getFluidTypeString() == "CarbonatedWater")) and playerObject:getStats():getThirst() > 0.1 then
-            if primaryFluid:getFluidTypeString() == "TaintedWater" then
+        elseif (item:isWaterSource() or fluidType == "Water" or fluidType == "CarbonatedWater") and playerObject:getStats():getThirst() > 0.1 then
+            if fluidType == "TaintedWater" then
                 return
             end
             ISInventoryPaneContextMenu.onDrinkForThirst(item, playerObject)
             returnItem(playerObject, item, playerInv, returnToContainer)
-        elseif primaryFluid:isCategory(FluidCategory.Beverage) then
+        elseif primaryFluid and primaryFluid:isCategory(FluidCategory.Beverage) then
             if not fluidcontainer:canPlayerEmpty() or playerObject:getMoodleLevel(MoodleType.FoodEaten) >= 3 and playerObject:getNutrition():getCalories() >= 1000 or fluidcontainer:getCapacity() > 3 then
                 return
             end
@@ -478,8 +480,8 @@ function ISBzHotSlot:activeteSlot()
         else
             equipped = equipPrimary(playerObject, item, playerNumber)
         end
-        -- put the weapon that was in hand back to the bag the new one came from
-        if equipped and itemsInHand and not fromHotBar then
+        -- "Move weapons" option: put the weapon that was in hand back to the bag the new one came from
+        if self.transferWeapons and equipped and itemsInHand and not fromHotBar then
             returnItem(playerObject, itemsInHand, playerInv, returnToContainer)
         end
     elseif instanceof(item, "Radio") and not instanceof(item, "HandWeapon") then
@@ -538,13 +540,13 @@ function ISBzHotSlot:activeteSlot()
         end)
     elseif item:getType() == "WildGarlicCataplasm" then
         applyToFirstPart(playerObject, item, function(bodyPart)
-            return bodyPart:isInfectedWound() and bodyPart:getComfreyFactor() == 0 and bodyPart:getComfreyFactor() == 0 and bodyPart:getPlantainFactor() == 0
+            return bodyPart:isInfectedWound() and bodyPart:getComfreyFactor() == 0 and bodyPart:getGarlicFactor() == 0 and bodyPart:getPlantainFactor() == 0
         end, function(bodyPart)
             return ISGarlicCataplasm:new(playerObject, playerObject, item, bodyPart)
         end)
     elseif item:getType() == "PlantainCataplasm" then
         applyToFirstPart(playerObject, item, function(bodyPart)
-            return bodyPart:scratched() or bodyPart:isDeepWounded() or bodyPart:isCut() and bodyPart:getComfreyFactor() == 0 and bodyPart:getComfreyFactor() == 0 and bodyPart:getPlantainFactor() == 0
+            return (bodyPart:scratched() or bodyPart:isDeepWounded() or bodyPart:isCut()) and bodyPart:getComfreyFactor() == 0 and bodyPart:getGarlicFactor() == 0 and bodyPart:getPlantainFactor() == 0
         end, function(bodyPart)
             return ISPlantainCataplasm:new(playerObject, playerObject, item, bodyPart)
         end)

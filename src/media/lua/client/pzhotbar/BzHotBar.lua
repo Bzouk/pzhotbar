@@ -97,9 +97,10 @@ end
 local function updateFromTable(ini)
     local iniMain = ini.main or {}
     local main = ISBzHotBar.main
-    main.activeWindows = tonumber(iniMain.activeWindows)
+    -- a missing or broken value keeps the current one
+    main.activeWindows = tonumber(iniMain.activeWindows) or main.activeWindows
     main.transferWeapons = str_to_bool(iniMain.transferWeapons)
-    main.slotsSize = tonumber(iniMain.slotsSize)
+    main.slotsSize = tonumber(iniMain.slotsSize) or main.slotsSize
     main.simpleDeleteButton = str_to_bool(iniMain.simpleDeleteButton)
     main.showToolTip = str_to_bool(iniMain.showToolTip)
     local iniItems = ini.items or {}
@@ -114,8 +115,8 @@ local function updateFromTable(ini)
         end
         local iniWindow = iniWindows[iStr] or {}
         local window = ISBzHotBar.windows[i]
-        window.rows = tonumber(iniWindow.rows)
-        window.columns = tonumber(iniWindow.columns)
+        window.rows = tonumber(iniWindow.rows) or window.rows
+        window.columns = tonumber(iniWindow.columns) or window.columns
         if iniWindow.x and iniWindow.y then
             window.x = tonumber(iniWindow.x)
             window.y = tonumber(iniWindow.y)
@@ -157,7 +158,7 @@ local function createWindows()
     for windowNum = 1, ISBzHotBar.main.activeWindows do
         local windowData = ISBzHotBar.windows[windowNum]
         local x = windowData.x or getCore():getScreenWidth() / 2 - 240
-        local y = windowData.y or getCore():getScreenHeight() - getHotBarHeight(windowData.columns) - 240
+        local y = windowData.y or getCore():getScreenHeight() - getHotBarHeight(windowData.rows) - 240
         local columns = windowData.columns
         local rows = windowData.rows
         local window = ISBzHotBarWindow:new(x, y, getHotBarWidth(columns), getHotBarHeight(rows), getHotBarSlotDimension(), windowNum, rows, columns, ISBzHotBar.items[windowNum], getDeleteText(), ISBzHotBar.main.showDeleteButton, ISBzHotBar.main.transferWeapons, ISBzHotBar.main.showToolTip, ISBzHotBar.main.opacity)
@@ -185,29 +186,35 @@ end
 
 local function updateAllSlots()
     for _, window in pairs(windowsHolder) do
-        if window.getIsVisible then
+        if window:getIsVisible() then
             window:updateItems()
         end
     end
 end
 
---- Moves windows that ended up off screen back inside it.
+--- Moves windows that ended up off screen, past any edge, back inside it.
 local function checkWindowsBounds()
     local screenWidth = getCore():getScreenWidth()
     local screenHeight = getCore():getScreenHeight()
     for windowNum = 1, ISBzHotBar.main.activeWindows do
         local window = ISBzHotBar.windows[windowNum]
         local openWindow = windowsHolder[windowNum]
-        if window.x ~= nil and window.x + getHotBarWidth(window.columns) > screenWidth then
-            window.x = math.max(screenWidth - getHotBarWidth(window.columns), 0)
-            if openWindow ~= nil then
-                openWindow:setX(window.x)
+        if window.x ~= nil then
+            local x = math.max(math.min(window.x --[[@as number]], screenWidth - getHotBarWidth(window.columns)), 0)
+            if x ~= window.x then
+                window.x = x
+                if openWindow ~= nil then
+                    openWindow:setX(x)
+                end
             end
         end
-        if window.y ~= nil and window.y + getHotBarHeight(window.rows) > screenHeight then
-            window.y = math.max(screenHeight - getHotBarHeight(window.rows), 0)
-            if openWindow ~= nil then
-                openWindow:setY(window.y)
+        if window.y ~= nil then
+            local y = math.max(math.min(window.y --[[@as number]], screenHeight - getHotBarHeight(window.rows)), 0)
+            if y ~= window.y then
+                window.y = y
+                if openWindow ~= nil then
+                    openWindow:setY(y)
+                end
             end
         end
     end
@@ -311,6 +318,7 @@ end)
 
 Events.OnGameStart.Add(function()
     loadConfig()
+    checkWindowsBounds()
     createWindows()
 end)
 
