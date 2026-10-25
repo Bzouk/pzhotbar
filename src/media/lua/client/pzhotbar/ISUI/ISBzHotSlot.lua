@@ -17,6 +17,8 @@
 ---@field transferWeapons boolean
 ---@field toolRender ISToolTipInv?
 ---@field showToolTip boolean
+---@field updatePending boolean?
+---@field nextUpdate number?
 local ISBzHotSlot = ISPanel:derive("ISBzHotSlot")
 
 -- Umbrella's ISMouseDrag does not declare the field vanilla sets while dragging items.
@@ -49,6 +51,8 @@ local function predicateBestItem(item1, item2)
     end
     return item2:getCondition() - item1:getCondition()
 end
+
+local UPDATE_MS = 500
 
 local frozenItemIcon = getTexture("media/ui/icon_frozen.png")
 local poisonIcon = getTexture("media/ui/SkullPoison.png")
@@ -145,7 +149,7 @@ function ISBzHotSlot:onMouseUp()
 end
 
 function ISBzHotSlot:hideTooltip()
-    if self.toolRender ~= nil then
+    if self.toolRender ~= nil and self.toolRender:isVisible() then
         self.toolRender:removeFromUIManager()
         self.toolRender:setVisible(false)
     end
@@ -299,7 +303,14 @@ function ISBzHotSlot:prerender()
     if playerInventory == nil then
         return
     end
+    -- Only the vanilla inventory pane clears drawDirty, so while it is collapsed the
+    -- flag stays set: recount at most every UPDATE_MS, but never miss a change.
     if playerInventory:isDrawDirty() then
+        self.updatePending = true
+    end
+    if self.updatePending and getTimestampMs() >= (self.nextUpdate or 0) then
+        self.updatePending = false
+        self.nextUpdate = getTimestampMs() + UPDATE_MS
         self:updateItem()
     end
     local iconBoxSize = self.height
