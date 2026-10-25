@@ -109,6 +109,8 @@ local function updateFromTable(data)
     main.slotsSize = tonumber(dataMain.slotsSize) or main.slotsSize
     main.simpleDeleteButton = str_to_bool(dataMain.simpleDeleteButton)
     main.showToolTip = str_to_bool(dataMain.showToolTip)
+    -- bars hidden with the toggle key stay hidden; files without the key show them
+    main.show = dataMain.show == nil or str_to_bool(dataMain.show)
     local dataItems = data.items or {}
     local dataWindows = data.windows or {}
     for i = 1, main.activeWindows do
@@ -170,7 +172,9 @@ local function createWindows()
         local rows = windowData.rows
         local window = ISBzHotBarWindow:new(x, y, getHotBarWidth(columns), getHotBarHeight(rows), getHotBarSlotDimension(), windowNum, rows, columns, ISBzHotBar.items[windowNum], getDeleteText(), ISBzHotBar.main.showDeleteButton, ISBzHotBar.main.transferWeapons, ISBzHotBar.main.showToolTip, ISBzHotBar.main.opacity)
         window:setVisible(ISBzHotBar.main.show)
-        window:addToUIManager()
+        if ISBzHotBar.main.show then
+            window:addToUIManager()
+        end
         windowsHolder[windowNum] = window
     end
 end
@@ -184,9 +188,17 @@ local function reloadWindows()
     createWindows()
 end
 
+--- Hidden bars leave the UI manager, or the game keeps calling update() on every slot.
 local function showWindows(showWin)
     for _, window in pairs(windowsHolder) do
-        window:setVisible(showWin)
+        if window:getIsVisible() ~= showWin then
+            window:setVisible(showWin)
+            if showWin then
+                window:addToUIManager()
+            else
+                window:removeFromUIManager()
+            end
+        end
     end
     ISBzHotBar.main.show = showWin
 end
