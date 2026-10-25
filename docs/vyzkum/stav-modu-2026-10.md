@@ -44,7 +44,7 @@ TS toolchain je mrtvý: pzpw-compiler, PipeWrench i generátor typings archived,
 
 GitHub repa jsou čistě starší verze Forgejo rep (žádné commity navíc), chybí jim nové README, tag `v0.1.4-b41` a archivní větve; žádné není archived. Workshop popis BZQuickSlots je B41 text převzatý z `assets/workshop/description.txt`.
 
-Kontejner sdílí s hostem jen `~/claude-virt/home` → `/home/bzouk`. Mod na hostu musí ležet v `~/Zomboid/Workshop/<Item>/Contents/mods/<Mod>/{common,42}/`; zda PZ následuje symlink, není ověřeno. Nahrává se in-game uploaderem nebo steamcmd (potřebuje přihlášení skutečným účtem).
+Kontejner sdílí s hostem jen `~/claude-virt/home` → `/home/bzouk`. Mod na hostu musí ležet v `~/Zomboid/Workshop/<Item>/Contents/mods/<Mod>/{common,42}/`; hra i uploader symlink následují (ověřeno ve hře 2026-10-25). Nahrává se in-game uploaderem nebo steamcmd (potřebuje přihlášení skutečným účtem).
 
 ## Zjištění
 
@@ -161,7 +161,7 @@ Surové BBCode popisy: [workshop/](workshop/) (`workshop-<id>.txt`, z `ISteamRem
 - **Chyba:** popis se dělí podle `"\r\n"` (`workshop-compiler.js:32`), repa mají `eol=lf`, takže `description=` dostane jen první řádek.
 - **Chyba:** `clean workshop` maže `<cachedir>/workshop` malými písmeny (`compiler.js:169`), build píše do `Workshop`.
 
-**Symlinky:** žádný zdroj nepotvrzuje ani nevyvrací, že PZ (Java) nebo Steam uploader na Linuxu následuje symlink v `~/Zomboid/Workshop`. Jediná zmínka (`Yoonutz/Project-Zomboid-mods` README:37–39, Windows junction) radí „Copy, never symlink“ kvůli MP version mismatch a mazání přes odkaz.
+**Symlinky — ověřeno ve hře 42.21 (2026-10-25):** host symlink `~/Zomboid/Workshop/BZQuickSlots` → `~/claude-virt/home/workspace/git/pzhotbar/build/Workshop/BZQuickSlots` hra následuje: mod je v seznamu modů, načte se (`LOG : Mod > loading pzhotbar42`) a in-game uploader (Workshop → „Create and update items“) položku vidí. Upload přes symlink zatím nezkoušen. (Dřív jediná zmínka, `Yoonutz/Project-Zomboid-mods` README:37–39, radila „Copy, never symlink“ kvůli Windows junction a MP.)
 
 **steamcmd** (Valve, partner.steamgames.com/doc/features/workshop/implementation; PZwiki ho uvádí jako alternativu): VDF `"workshopitem" { "appid" "108600" "publishedfileid" "<id>" "contentfolder" "<abs>" "previewfile" … "changenote" … }`, `steamcmd +login <user> +workshop_build_item <vdf> +quit`. Potřebuje přihlášení skutečným účtem s hrou (anonym ne), Steam Guard kód při prvním přihlášení. Nepřidává patičku Workshop ID / Mod ID. `contentfolder` = `…/Workshop/<Item>/Contents` (odvozeno, netestováno).
 
@@ -184,7 +184,7 @@ Surové BBCode popisy: [workshop/](workshop/) (`workshop-<id>.txt`, z `ISteamRem
 
 ## Otevřené otázky
 
-- Zda PZ a Steam uploader na Linuxu následují symlink v `~/Zomboid/Workshop` — ověřit ve hře.
+- Zda upload na Steam přes symlink projde (hra i uploader symlink vidí, ověřeno 2026-10-25).
 - Zda staré `.txt` překlady v 42.21 ještě vůbec načte; zda override `craftRecipe` plně nahradí vanilla recept a zda je `CraftRecipe:Load` volatelné z Lua — ověřit ve hře.
 - Zda `loadstring` zůstane natrvalo — neznámé, oficiální patch notes 42.20.4/42.21 nečteny.
 - Použitelnost PipeWrench větve `42.0.0` a TS výstupu Candle-Compileru — netestováno.

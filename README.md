@@ -181,7 +181,7 @@ once; after that every `scripts/build.sh` is live on the next game start:
 ln -s /path/to/pzhotbar/build/Workshop/BZQuickSlots ~/Zomboid/Workshop/BZQuickSlots
 ```
 
-If the game does not follow the link, copy instead after each build:
+The game and its uploader follow the link (checked on 42.21). Where a link is not an option, copy after each build instead:
 
 ```bash
 rsync -a --delete /path/to/pzhotbar/build/Workshop/BZQuickSlots/ ~/Zomboid/Workshop/BZQuickSlots/
