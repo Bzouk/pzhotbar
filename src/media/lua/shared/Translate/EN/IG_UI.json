@@ -18,5 +18,7 @@
     "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Show tooltip window, like in inventory.",
     "IGUI_Bz_Fast_HotBar_DropdownOpacity_Name": "Opacity for slots ",
     "IGUI_Bz_Fast_HotBar_DropdownOpacity_Tooltip": "Opacity. 0 to 1.",
-    "IGUI_Bz_Fast_HotBar_HideCar_Name": "Hide/Show when enter car "
+    "IGUI_Bz_Fast_HotBar_HideCar_Name": "Hide/Show when enter car ",
+    "IGUI_Bz_Fast_HotBar_PerSave_Name": "Separate slots per save",
+    "IGUI_Bz_Fast_HotBar_PerSave_Tooltip": "Each save keeps its own slot items and bar positions. A new save starts with a copy of the shared set."
 }

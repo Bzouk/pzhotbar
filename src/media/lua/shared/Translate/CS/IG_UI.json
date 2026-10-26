@@ -14,5 +14,7 @@
     "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Simple_Delete": "Nahraďte text tlačítka pro odstranění znakem X.",
     "IGUI_Bz_Fast_HotBar_CheckBox_Simple_Delete": "Jednoduché tlačítko pro odstranění.",
     "IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip": "Zobrazit nápovědu ve slotu",
-    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Zobrazení okna s nápovědou jako v inventáři."
+    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Zobrazení okna s nápovědou jako v inventáři.",
+    "IGUI_Bz_Fast_HotBar_PerSave_Name": "Sloty zvlášť pro každý save",
+    "IGUI_Bz_Fast_HotBar_PerSave_Tooltip": "Každý save má vlastní věci ve slotech a pozice lišt. Nový save začne kopií společné sady."
 }

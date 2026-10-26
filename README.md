@@ -117,12 +117,19 @@ Build 42 provides that screen itself, so no extra mod is needed.
 | Show tooltip | on/off | on |
 | Hide bars in a vehicle | on/off | off |
 | Per-slot keybinds, bar 1 slots 1–9 | any key | unbound |
+| Separate slots per save | on/off | off |
 
 ![Keybind in the options screen](docs/screenshots/mod-options-keybind.jpg)
 
 Slots, bar layout and settings are stored in `~/Zomboid/Lua/pzhotbar42.txt`. When that file
 does not exist yet, the mod imports `pzhotbar.ini` (0.2.x) or `bzhotbar.ini` (the original
 Lua mod).
+
+With **Separate slots per save** on, each save keeps its own slots, bar positions and hidden
+state in `~/Zomboid/Lua/pzhotbar42_<game mode>_<save>.txt`; the settings above stay shared. A
+save without its own file starts with a copy of the shared set, and edits in it no longer change
+the shared set. Turning the option off in game brings back the shared set; turning it on again
+brings back the save's set. Files of deleted saves are not removed.
 
 ## Installing
 

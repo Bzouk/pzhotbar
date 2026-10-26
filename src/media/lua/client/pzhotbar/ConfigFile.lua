@@ -82,4 +82,24 @@ function ConfigFile.write(filename, t)
     writer:close()
 end
 
+local COMMON_FILE = "pzhotbar42.txt"
+
+--- Files to read, first found wins, and the file to write.
+--- The shared set is read from the files of older versions too, while COMMON_FILE does not exist yet.
+--- With slots per save, the save's own file comes first and is the only one written.
+---@param perSave boolean
+---@param gameMode string getCore():getGameMode()
+---@param saveName string getWorld():getWorld()
+---@return string[] reads
+---@return string write
+function ConfigFile.files(perSave, gameMode, saveName)
+    local reads = {COMMON_FILE, "pzhotbar.ini", "bzhotbar.ini"}
+    if not perSave then
+        return reads, COMMON_FILE
+    end
+    local saveFile = "pzhotbar42_" .. gameMode .. "_" .. saveName .. ".txt"
+    table.insert(reads, 1, saveFile)
+    return reads, saveFile
+end
+
 return ConfigFile

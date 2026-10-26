@@ -2,9 +2,6 @@ local ISBzHotBarWindow = require("pzhotbar/ISUI/ISBzHotBarWindow")
 local ConfigFile = require("pzhotbar/ConfigFile")
 
 local FONT_UI_SMALL = getTextManager():getFontHeight(UIFont.Small)
-local CONFIG_FILE = "pzhotbar42.txt"
---- Read in this order; the files of older versions only while CONFIG_FILE does not exist yet.
-local CONFIG_FILES = {CONFIG_FILE, "pzhotbar.ini", "bzhotbar.ini"}
 
 ---@class BzWindowData
 ---@field rows integer
@@ -54,6 +51,9 @@ local ISBzHotBar = {
 ---@type table<integer, ISBzHotBarWindow>
 local windowsHolder = {}
 
+--- Slots per save in effect: set in game from the mod option, always off in the main menu.
+local perSave = false
+
 -- ============================
 -- Helpers
 
@@ -95,25 +95,38 @@ end
 -- ============================
 -- Config file
 
+local function configFiles()
+    if perSave then
+        return ConfigFile.files(true, getCore():getGameMode(), getWorld():getWorld())
+    end
+    return ConfigFile.files(false, "", "")
+end
+
 local function saveConfig()
-    ConfigFile.write(CONFIG_FILE, ISBzHotBar)
+    local _, file = configFiles()
+    ConfigFile.write(file, ISBzHotBar)
 end
 
 --- Copies settings, slot items and window layout read from a config file into ISBzHotBar.
-local function updateFromTable(data)
-    local dataMain = data.main or {}
+--- slotsOnly (a save's own file): just the slot items, window positions and whether the bars are hidden.
+local function updateFromTable(data, slotsOnly)
     local main = ISBzHotBar.main
-    -- a missing or broken value keeps the current one
-    main.activeWindows = tonumber(dataMain.activeWindows) or main.activeWindows
-    main.transferWeapons = str_to_bool(dataMain.transferWeapons)
-    main.slotsSize = tonumber(dataMain.slotsSize) or main.slotsSize
-    main.simpleDeleteButton = str_to_bool(dataMain.simpleDeleteButton)
-    main.showToolTip = str_to_bool(dataMain.showToolTip)
+    if not slotsOnly then
+        local dataMain = data.main or {}
+        -- a missing or broken value keeps the current one
+        main.activeWindows = tonumber(dataMain.activeWindows) or main.activeWindows
+        main.transferWeapons = str_to_bool(dataMain.transferWeapons)
+        main.slotsSize = tonumber(dataMain.slotsSize) or main.slotsSize
+        main.simpleDeleteButton = str_to_bool(dataMain.simpleDeleteButton)
+        main.showToolTip = str_to_bool(dataMain.showToolTip)
+    end
+    local show = (data.main or {}).show
     -- bars hidden with the toggle key stay hidden; files without the key show them
-    main.show = dataMain.show == nil or str_to_bool(dataMain.show)
+    main.show = show == nil or str_to_bool(show)
     local dataItems = data.items or {}
     local dataWindows = data.windows or {}
-    for i = 1, main.activeWindows do
+    -- bars above the current count too, or lowering the count would lose their slots on the next save
+    for i = 1, #ISBzHotBar.windows do
         local iStr = tostring(i)
         for key, value in pairs(dataItems[iStr] or {}) do
             local kk = tonumber(key)
@@ -123,8 +136,10 @@ local function updateFromTable(data)
         end
         local dataWindow = dataWindows[iStr] or {}
         local window = ISBzHotBar.windows[i]
-        window.rows = tonumber(dataWindow.rows) or window.rows
-        window.columns = tonumber(dataWindow.columns) or window.columns
+        if not slotsOnly then
+            window.rows = tonumber(dataWindow.rows) or window.rows
+            window.columns = tonumber(dataWindow.columns) or window.columns
+        end
         if dataWindow.x and dataWindow.y then
             window.x = tonumber(dataWindow.x)
             window.y = tonumber(dataWindow.y)
@@ -132,13 +147,19 @@ local function updateFromTable(data)
     end
 end
 
---- Loads the first config file found, the current one first.
+--- Loads the first config file found, the current one first, over empty slots and default positions.
 local function loadConfig()
-    for _, file in ipairs(CONFIG_FILES) do
+    for windowNum = 1, #ISBzHotBar.windows do
+        ISBzHotBar.items[windowNum] = {}
+        ISBzHotBar.windows[windowNum].x = nil
+        ISBzHotBar.windows[windowNum].y = nil
+    end
+    local reads, write = configFiles()
+    for _, file in ipairs(reads) do
         local data = ConfigFile.read(file)
         -- Kahlua has no next(); an empty table skips the loop
         for _ in pairs(data) do
-            updateFromTable(data)
+            updateFromTable(data, perSave and file == write)
             return
         end
     end
@@ -281,6 +302,7 @@ local function IngameConfigSetup()
     Configs.showtooltip = options:addTickBox("showtooltip", getText("IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip"), true)
     Configs.opacitySettings = options:addSlider("opacity", getText("IGUI_Bz_Fast_HotBar_DropdownOpacity_Name"), 0, 1, 0.1, 1, "IGUI_Bz_Fast_HotBar_DropdownOpacity_Tooltip")
     Configs.hideCar = options:addTickBox("hidecar", getText("IGUI_Bz_Fast_HotBar_HideCar_Name"), false)
+    Configs.perSave = options:addTickBox("persave", getText("IGUI_Bz_Fast_HotBar_PerSave_Name"), false, "IGUI_Bz_Fast_HotBar_PerSave_Tooltip")
     options:addSeparator()
     options:addDescription("Windows 1 keybinds")
     for slot = 0, 8 do
@@ -288,6 +310,7 @@ local function IngameConfigSetup()
     end
     options.apply = function()
         if not isInGame() then
+            perSave = false
             loadConfig()
             readConfigs()
             saveConfig()
@@ -296,6 +319,15 @@ local function IngameConfigSetup()
         readConfigs()
         setWindosPos()
         saveConfig()
+        -- switching on: the save's own set comes back, or the current bars (just saved as shared) become it;
+        -- off: the shared set comes back, the save's file stays
+        if Configs.perSave:getValue() ~= perSave then
+            perSave = Configs.perSave:getValue()
+            loadConfig()
+            readConfigs()
+            checkWindowsBounds()
+            saveConfig()
+        end
         reloadWindows()
     end
 end
@@ -336,6 +368,7 @@ Events.OnSave.Add(function()
 end)
 
 Events.OnGameStart.Add(function()
+    perSave = Configs.perSave:getValue()
     loadConfig()
     checkWindowsBounds()
     createWindows()
