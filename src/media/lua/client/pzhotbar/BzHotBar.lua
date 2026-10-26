@@ -285,7 +285,7 @@ local function IngameConfigSetup()
     local options = PZAPI.ModOptions:create("pzhotbar42", " Quick slots mod")
     options:addTitle("IGUI_Bz_Fast_HotBar_Title")
     Configs.keybind = options:addKeyBind("pzhotbar42keybind", getText("IGUI_Bz_Fast_HotBar_Keybind_Name"), Keyboard.KEY_TAB)
-    Configs.activeWindows = options:addSlider("tabscount", getText("IGUI_Bz_Fast_HotBar_MaxTables_Name") .. "1", 1, 5, 1, 1, "IGUI_Bz_Fast_HotBar_MaxTables_Tooltip")
+    Configs.activeWindows = options:addSlider("tabscount", getText("IGUI_Bz_Fast_HotBar_MaxTables_Name"), 1, 5, 1, 1, "IGUI_Bz_Fast_HotBar_MaxTables_Tooltip")
     -- defaults: window 1 is 2 x 8, the others 1 x 1
     for windowNum = 1, 5 do
         local defaultRows, defaultColumns = 1, 1

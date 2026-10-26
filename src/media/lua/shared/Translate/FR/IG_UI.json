@@ -1,7 +1,7 @@
 {
     "IGUI_Bz_Fast_HotBar_MaxTables_Name": "Nombre de fenetres",
     "IGUI_Bz_Fast_HotBar_MaxTables_Tooltip": "Fenetre active 1 a 5.",
-    "IGUI_Bz_Fast_HotBar_DropdownX_Name": "Lignes par fenetres",
+    "IGUI_Bz_Fast_HotBar_DropdownX_Name": "Lignes par fenetres ",
     "IGUI_Bz_Fast_HotBar_DropdownX_Tooltip": "Nombre de lignes a chaque fenetres. 1 a 10.",
     "IGUI_Bz_Fast_HotBar_DropdownY_Name": "Colonnes par fenetres ",
     "IGUI_Bz_Fast_HotBar_DropdownY_Tooltip": "Nombre de colonnes a chaque fenetres. 1 a 10.",
