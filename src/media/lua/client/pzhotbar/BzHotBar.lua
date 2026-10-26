@@ -317,14 +317,13 @@ local function IngameConfigSetup()
         readConfigs()
         setWindosPos()
         saveConfig()
-        -- switching on: the bars become the save's set; off: the shared set comes back, the save's file stays
+        -- switching on: the save's own set comes back, or the current bars (just saved as shared) become it;
+        -- off: the shared set comes back, the save's file stays
         if Configs.perSave:getValue() ~= perSave then
             perSave = Configs.perSave:getValue()
-            if not perSave then
-                loadConfig()
-                readConfigs()
-                checkWindowsBounds()
-            end
+            loadConfig()
+            readConfigs()
+            checkWindowsBounds()
             saveConfig()
         end
         reloadWindows()
