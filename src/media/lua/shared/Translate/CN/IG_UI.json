@@ -14,5 +14,14 @@
     "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_Delete": "在插槽中显示删除按钮",
     "IGUI_Bz_Fast_HotBar_CheckBox_Simple_Delete": "简单的删除按钮。",
     "IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip": "在插槽中显示工具提示",
-    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "显示工具提示窗口，就像在库存中一样。"
+    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "显示工具提示窗口，就像在库存中一样。",
+    "IGUI_Bz_Fast_HotBar_DropdownOpacity_Name": "插槽不透明度 ",
+    "IGUI_Bz_Fast_HotBar_DropdownOpacity_Tooltip": "不透明度。0到1。",
+    "IGUI_Bz_Fast_HotBar_HideCar_Name": "上车时隐藏/下车时显示 ",
+    "IGUI_Bz_Fast_HotBar_PerSave_Name": "每个存档单独的快捷栏",
+    "IGUI_Bz_Fast_HotBar_PerSave_Tooltip": "每个存档保存自己的插槽物品和快捷栏位置。新存档从共享设置的副本开始。",
+    "IGUI_Bz_Fast_HotBar_Keybind_Name": "快捷栏按键",
+    "IGUI_Bz_Fast_HotBar_SlotKeybinds": "快捷栏1的按键",
+    "IGUI_Bz_Fast_HotBar_SlotKeybind_Name": "插槽%1按键",
+    "IGUI_Bz_Fast_HotBar_Title": "Bz Quick slot mod"
 }
