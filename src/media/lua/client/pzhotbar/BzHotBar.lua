@@ -283,8 +283,8 @@ end
 
 local function IngameConfigSetup()
     local options = PZAPI.ModOptions:create("pzhotbar42", " Quick slots mod")
-    options:addTitle("Bz Quick slot mod")
-    Configs.keybind = options:addKeyBind("pzhotbar42keybind", getText("Quick slots keybind"), Keyboard.KEY_TAB)
+    options:addTitle("IGUI_Bz_Fast_HotBar_Title")
+    Configs.keybind = options:addKeyBind("pzhotbar42keybind", getText("IGUI_Bz_Fast_HotBar_Keybind_Name"), Keyboard.KEY_TAB)
     Configs.activeWindows = options:addSlider("tabscount", getText("IGUI_Bz_Fast_HotBar_MaxTables_Name") .. "1", 1, 5, 1, 1, "IGUI_Bz_Fast_HotBar_MaxTables_Tooltip")
     -- defaults: window 1 is 2 x 8, the others 1 x 1
     for windowNum = 1, 5 do
@@ -295,18 +295,18 @@ local function IngameConfigSetup()
         Configs.rows[windowNum] = options:addSlider(windowNum .. "x", getText("IGUI_Bz_Fast_HotBar_DropdownX_Name") .. windowNum, 1, 10, 1, defaultRows, "IGUI_Bz_Fast_HotBar_DropdownX_Tooltip")
         Configs.columns[windowNum] = options:addSlider(windowNum .. "y", getText("IGUI_Bz_Fast_HotBar_DropdownY_Name") .. windowNum, 1, 10, 1, defaultColumns, "IGUI_Bz_Fast_HotBar_DropdownY_Tooltip")
     end
-    Configs.moveweapons = options:addTickBox("moveweapons", getText("IGUI_Bz_Fast_HotBar_CheckBox_Move_Weapons_Name"), true)
-    Configs.simpledelete = options:addTickBox("simpledelete", getText("IGUI_Bz_Fast_HotBar_CheckBox_Simple_Delete"), false)
-    Configs.showdeletebutton = options:addTickBox("showdeletebutton", getText("IGUI_Bz_Fast_HotBar_CheckBox_Show_Delete"), true)
+    Configs.moveweapons = options:addTickBox("moveweapons", getText("IGUI_Bz_Fast_HotBar_CheckBox_Move_Weapons_Name"), true, "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Move_Weapons")
+    Configs.simpledelete = options:addTickBox("simpledelete", getText("IGUI_Bz_Fast_HotBar_CheckBox_Simple_Delete"), false, "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Simple_Delete")
+    Configs.showdeletebutton = options:addTickBox("showdeletebutton", getText("IGUI_Bz_Fast_HotBar_CheckBox_Show_Delete"), true, "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_Delete")
     Configs.dropdownslotsize = options:addSlider("dropdownslotsize", getText("IGUI_Bz_Fast_HotBar_SlotSize_Name"), 45, 90, 5, 65, "IGUI_Bz_Fast_HotBar_SlotSize_Tooltip")
-    Configs.showtooltip = options:addTickBox("showtooltip", getText("IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip"), true)
+    Configs.showtooltip = options:addTickBox("showtooltip", getText("IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip"), true, "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip")
     Configs.opacitySettings = options:addSlider("opacity", getText("IGUI_Bz_Fast_HotBar_DropdownOpacity_Name"), 0, 1, 0.1, 1, "IGUI_Bz_Fast_HotBar_DropdownOpacity_Tooltip")
     Configs.hideCar = options:addTickBox("hidecar", getText("IGUI_Bz_Fast_HotBar_HideCar_Name"), false)
     Configs.perSave = options:addTickBox("persave", getText("IGUI_Bz_Fast_HotBar_PerSave_Name"), false, "IGUI_Bz_Fast_HotBar_PerSave_Tooltip")
     options:addSeparator()
-    options:addDescription("Windows 1 keybinds")
+    options:addDescription("IGUI_Bz_Fast_HotBar_SlotKeybinds")
     for slot = 0, 8 do
-        Configs.keybindSlots[slot] = options:addKeyBind("pzhotbar42keybindpos" .. slot, getText("Keybind slot " .. (slot + 1) .. "."), Keyboard.KEY_NONE)
+        Configs.keybindSlots[slot] = options:addKeyBind("pzhotbar42keybindpos" .. slot, getText("IGUI_Bz_Fast_HotBar_SlotKeybind_Name", slot + 1), Keyboard.KEY_NONE)
     end
     options.apply = function()
         if not isInGame() then

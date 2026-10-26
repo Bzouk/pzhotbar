@@ -14,5 +14,14 @@
     "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Simple_Delete": "Remplacer le texte du bouton de suppression par un X.",
     "IGUI_Bz_Fast_HotBar_CheckBox_Simple_Delete": "Un simple bouton permet de l'enlever.",
     "IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip": "Afficher l'infobulle dans la fente",
-    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Afficher une fenetre d'info-bulle, comme dans l'inventaire."
+    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Afficher une fenetre d'info-bulle, comme dans l'inventaire.",
+    "IGUI_Bz_Fast_HotBar_DropdownOpacity_Name": "Opacité des emplacements ",
+    "IGUI_Bz_Fast_HotBar_DropdownOpacity_Tooltip": "Opacité. 0 à 1.",
+    "IGUI_Bz_Fast_HotBar_HideCar_Name": "Masquer/afficher en montant en voiture ",
+    "IGUI_Bz_Fast_HotBar_PerSave_Name": "Emplacements séparés par sauvegarde",
+    "IGUI_Bz_Fast_HotBar_PerSave_Tooltip": "Chaque sauvegarde garde ses propres objets dans les emplacements et la position des fenêtres. Une nouvelle sauvegarde commence avec une copie de l'ensemble partagé.",
+    "IGUI_Bz_Fast_HotBar_Keybind_Name": "Touche des emplacements rapides",
+    "IGUI_Bz_Fast_HotBar_SlotKeybinds": "Touches de la fenêtre 1",
+    "IGUI_Bz_Fast_HotBar_SlotKeybind_Name": "Touche de l'emplacement %1.",
+    "IGUI_Bz_Fast_HotBar_Title": "Bz Quick slot mod"
 }

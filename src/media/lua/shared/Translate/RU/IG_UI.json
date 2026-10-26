@@ -14,5 +14,14 @@
     "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Simple_Delete": "Замените текст кнопки удаления на X.",
     "IGUI_Bz_Fast_HotBar_CheckBox_Simple_Delete": "Простая кнопка для снятия.",
     "IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip": "Показать всплывающую подсказку в слоте",
-    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Показывать окно с подсказками, как в инвентаре."
+    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Показывать окно с подсказками, как в инвентаре.",
+    "IGUI_Bz_Fast_HotBar_DropdownOpacity_Name": "Непрозрачность слотов ",
+    "IGUI_Bz_Fast_HotBar_DropdownOpacity_Tooltip": "Непрозрачность. От 0 до 1.",
+    "IGUI_Bz_Fast_HotBar_HideCar_Name": "Скрывать/показывать при посадке в машину ",
+    "IGUI_Bz_Fast_HotBar_PerSave_Name": "Отдельные слоты для каждого сохранения",
+    "IGUI_Bz_Fast_HotBar_PerSave_Tooltip": "Каждое сохранение хранит свои предметы в слотах и положение таблиц. Новое сохранение начинается с копии общего набора.",
+    "IGUI_Bz_Fast_HotBar_Keybind_Name": "Клавиша быстрых слотов",
+    "IGUI_Bz_Fast_HotBar_SlotKeybinds": "Клавиши таблицы 1",
+    "IGUI_Bz_Fast_HotBar_SlotKeybind_Name": "Клавиша слота %1.",
+    "IGUI_Bz_Fast_HotBar_Title": "Bz Quick slot mod"
 }

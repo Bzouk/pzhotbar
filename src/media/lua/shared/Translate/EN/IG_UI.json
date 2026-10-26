@@ -14,11 +14,14 @@
     "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_Delete": "Show delete button in slot.",
     "IGUI_Bz_Fast_HotBar_CheckBox_Simple_Delete": "Simple delete button",
     "IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip": "Show tooltip in slot",
-    "IGUI_Bz_Fast_HotBar_CheckBox_Config_Version": "Set config version",
     "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Show tooltip window, like in inventory.",
     "IGUI_Bz_Fast_HotBar_DropdownOpacity_Name": "Opacity for slots ",
     "IGUI_Bz_Fast_HotBar_DropdownOpacity_Tooltip": "Opacity. 0 to 1.",
     "IGUI_Bz_Fast_HotBar_HideCar_Name": "Hide/Show when enter car ",
     "IGUI_Bz_Fast_HotBar_PerSave_Name": "Separate slots per save",
-    "IGUI_Bz_Fast_HotBar_PerSave_Tooltip": "Each save keeps its own slot items and bar positions. A new save starts with a copy of the shared set."
+    "IGUI_Bz_Fast_HotBar_PerSave_Tooltip": "Each save keeps its own slot items and bar positions. A new save starts with a copy of the shared set.",
+    "IGUI_Bz_Fast_HotBar_Keybind_Name": "Quick slots keybind",
+    "IGUI_Bz_Fast_HotBar_SlotKeybinds": "Keybinds for table 1",
+    "IGUI_Bz_Fast_HotBar_SlotKeybind_Name": "Keybind slot %1.",
+    "IGUI_Bz_Fast_HotBar_Title": "Bz Quick slot mod"
 }

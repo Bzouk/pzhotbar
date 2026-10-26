@@ -14,5 +14,14 @@
     "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Simple_Delete": "Sustituye el texto del botón de borrar por una X.",
     "IGUI_Bz_Fast_HotBar_CheckBox_Simple_Delete": "Un simple botón para quitarlo.",
     "IGUI_Bz_Fast_HotBar_CheckBox_Show_ToolTip": "Mostrar información",
-    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Mostrar ventana de información sobre herramientas, como en el inventario."
+    "IGUI_Bz_Fast_HotBar_CheckBox_Tooltip_Show_ToolTip": "Mostrar ventana de información sobre herramientas, como en el inventario.",
+    "IGUI_Bz_Fast_HotBar_DropdownOpacity_Name": "Opacidad de las ranuras ",
+    "IGUI_Bz_Fast_HotBar_DropdownOpacity_Tooltip": "Opacidad. 0 a 1.",
+    "IGUI_Bz_Fast_HotBar_HideCar_Name": "Ocultar/mostrar al subir al coche ",
+    "IGUI_Bz_Fast_HotBar_PerSave_Name": "Ranuras separadas por partida",
+    "IGUI_Bz_Fast_HotBar_PerSave_Tooltip": "Cada partida guarda sus propios objetos en las ranuras y la posición de las ventanas. Una partida nueva empieza con una copia del conjunto compartido.",
+    "IGUI_Bz_Fast_HotBar_Keybind_Name": "Tecla de ranuras rápidas",
+    "IGUI_Bz_Fast_HotBar_SlotKeybinds": "Teclas de la ventana 1",
+    "IGUI_Bz_Fast_HotBar_SlotKeybind_Name": "Tecla de la ranura %1.",
+    "IGUI_Bz_Fast_HotBar_Title": "Bz Quick slot mod"
 }
