@@ -20,6 +20,7 @@ Quick access bars for items. Drag an item into a slot and use it with one click 
 [/list]
 0.3.1: the toggle key shows the bars again after saving the mod options while they were hidden.
 0.3.2: better performance — the bars no longer rescan the whole inventory every frame while the inventory window is collapsed (FPS drop with many items), hidden bars cost nothing, and bars hidden with the toggle key stay hidden after loading a save.
+0.4.0: optional [b]Separate slots per save[/b] — each save keeps its own slots, bar positions and hidden state; a new save starts with a copy of your shared set (thanks MD for the request). Every Mod Options text is now translated in all six languages, and the tick boxes show their tooltips. The Chinese, Spanish, French and Russian additions are machine translated — corrections are welcome in the comments.
 
 [h2]Usage[/h2]
 [b]Tab[/b] shows and hides the bars. Bars drag around freely and use the same window frame as the inventory panel (X to hide, pin to collapse).
@@ -71,8 +72,9 @@ Options → MODS → [i]Quick slots mod[/i]:
 [*]Simple delete button, show delete button, show tooltip
 [*]Hide bars in a vehicle
 [*]Per-slot keybinds, bar 1 slots 1–9
+[*]Separate slots per save (off by default)
 [/list]
-Slots, bar layout and settings are stored in Zomboid/Lua/pzhotbar42.txt. On first run the mod imports the settings of the older versions (pzhotbar.ini, bzhotbar.ini).
+Slots, bar layout and settings are stored in Zomboid/Lua/pzhotbar42.txt. On first run the mod imports the settings of the older versions (pzhotbar.ini, bzhotbar.ini). With [i]Separate slots per save[/i] on, each save keeps its slots, bar positions and hidden state in Zomboid/Lua/pzhotbar42_<game mode>_<save>.txt; the settings above stay shared. Files of deleted saves are not removed.
 
 [h2]Languages[/h2]
 English, Czech, French (@Bobitec + Google), Spanish (@WhiteLotus + Google), Chinese, Russian.
