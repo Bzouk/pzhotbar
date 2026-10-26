@@ -391,6 +391,28 @@ local function equipPrimary(playerObject, item, playerNumber)
     return false
 end
 
+-- Filter tag, the mask it fits and the vanilla recipe that puts it in (recipes_gasmasks.txt).
+local FILTER_RECIPES = {
+    {filter = ItemTag.RESPIRATOR_FILTER, mask = ItemTag.RESPIRATOR, recipe = "PutFiltersOnRespirator"},
+    {filter = ItemTag.GASMASK_FILTER, mask = ItemTag.GAS_MASK, recipe = "PutFilterOnGasMask"},
+}
+
+--- The recipe that puts this filter into a worn mask, and that mask; nil when no worn mask fits.
+---@return CraftRecipe?, InventoryItem?
+local function filterRecipe(playerObject, item)
+    for _, entry in ipairs(FILTER_RECIPES) do
+        if item:hasTag(entry.filter) then
+            local wornItems = playerObject:getWornItems()
+            for i = 0, wornItems:size() - 1 do
+                local worn = wornItems:getItemByIndex(i)
+                if worn:hasTag(entry.mask) then
+                    return getScriptManager():getCraftRecipe(entry.recipe), worn
+                end
+            end
+        end
+    end
+end
+
 --- All the work for activating a slot: uses the slot's item the way a double click would.
 function ISBzHotSlot:activeteSlot()
     if not hasItem(self.itemInfo) then
@@ -411,7 +433,12 @@ function ISBzHotSlot:activeteSlot()
         return
     end
     local returnToContainer = sourceContainer(playerObject, item)
-    if item:getCategory() == "Food" or item:getScriptItem():isCantEat() then
+    local maskRecipe, mask = filterRecipe(playerObject, item)
+    if maskRecipe and mask then
+        -- the worn mask is the selected item, so the recipe picks it and finds a filter itself;
+        -- vanilla refuses a mask that already has a filter
+        ISInventoryPaneContextMenu.OnNewCraft(mask, maskRecipe, playerNumber, false)
+    elseif item:getCategory() == "Food" or item:getScriptItem():isCantEat() then
         ---@cast item Food
         if not item:isPoison() and not item:isFrozen() then
             if item:getHungChange() < 0 then
