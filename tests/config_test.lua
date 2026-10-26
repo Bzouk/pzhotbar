@@ -47,4 +47,16 @@ assert(old.windows["1"].rows == "2")
 -- missing file
 for _ in pairs(ConfigFile.read("missing.txt")) do error("missing file read as non-empty") end
 
+-- which files to read and write, with and without slots per save
+local function same(a, b)
+    assert(#a == #b, table.concat(a, ",") .. " ~= " .. table.concat(b, ","))
+    for i = 1, #a do assert(a[i] == b[i], a[i] .. " ~= " .. b[i]) end
+end
+local reads, write = ConfigFile.files(false, "Apocalypse", "27-10-2026_10-00-00")
+same(reads, {"pzhotbar42.txt", "pzhotbar.ini", "bzhotbar.ini"})
+assert(write == "pzhotbar42.txt")
+reads, write = ConfigFile.files(true, "Apocalypse", "27-10-2026_10-00-00")
+same(reads, {"pzhotbar42_Apocalypse_27-10-2026_10-00-00.txt", "pzhotbar42.txt", "pzhotbar.ini", "bzhotbar.ini"})
+assert(write == "pzhotbar42_Apocalypse_27-10-2026_10-00-00.txt")
+
 print("config_test ok")
