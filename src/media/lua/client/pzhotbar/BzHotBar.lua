@@ -149,7 +149,7 @@ end
 
 --- Loads the first config file found, the current one first, over empty slots and default positions.
 local function loadConfig()
-    for windowNum = 1, 5 do
+    for windowNum = 1, #ISBzHotBar.windows do
         ISBzHotBar.items[windowNum] = {}
         ISBzHotBar.windows[windowNum].x = nil
         ISBzHotBar.windows[windowNum].y = nil
