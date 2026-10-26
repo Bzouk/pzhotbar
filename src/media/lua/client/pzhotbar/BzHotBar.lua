@@ -108,7 +108,7 @@ local function saveConfig()
 end
 
 --- Copies settings, slot items and window layout read from a config file into ISBzHotBar.
---- slotsOnly (a save's own file): just the slot items and window positions.
+--- slotsOnly (a save's own file): just the slot items, window positions and whether the bars are hidden.
 local function updateFromTable(data, slotsOnly)
     local main = ISBzHotBar.main
     if not slotsOnly then
@@ -119,12 +119,14 @@ local function updateFromTable(data, slotsOnly)
         main.slotsSize = tonumber(dataMain.slotsSize) or main.slotsSize
         main.simpleDeleteButton = str_to_bool(dataMain.simpleDeleteButton)
         main.showToolTip = str_to_bool(dataMain.showToolTip)
-        -- bars hidden with the toggle key stay hidden; files without the key show them
-        main.show = dataMain.show == nil or str_to_bool(dataMain.show)
     end
+    local show = (data.main or {}).show
+    -- bars hidden with the toggle key stay hidden; files without the key show them
+    main.show = show == nil or str_to_bool(show)
     local dataItems = data.items or {}
     local dataWindows = data.windows or {}
-    for i = 1, main.activeWindows do
+    -- bars above the current count too, or lowering the count would lose their slots on the next save
+    for i = 1, #ISBzHotBar.windows do
         local iStr = tostring(i)
         for key, value in pairs(dataItems[iStr] or {}) do
             local kk = tonumber(key)
