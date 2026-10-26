@@ -381,6 +381,19 @@ Events.OnMainMenuEnter.Add(function()
     end
 end)
 
+-- Vanilla refreshes the inventory UI before the recipe destroys its inputs,
+-- so the refresh below counts them still there: recount once more after the craft.
+local vanillaHandcraftPerform = ISHandcraftAction.perform
+---@diagnostic disable-next-line: duplicate-set-field -- deliberate override of the vanilla method
+function ISHandcraftAction:perform()
+    vanillaHandcraftPerform(self)
+    for _, window in pairs(windowsHolder) do
+        for _, slot in pairs(window.slots) do
+            slot.updatePending = true
+        end
+    end
+end
+
 Events.OnRefreshInventoryWindowContainers.Add(function(iSInventoryPage, state)
     if iSInventoryPage.onCharacter and state == "end" then
         updateAllSlots()
