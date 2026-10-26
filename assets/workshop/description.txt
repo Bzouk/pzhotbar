@@ -9,6 +9,9 @@ Quick access bars for items. Drag an item into a slot and use it with one click 
 
 [h3]Do not run this alongside the older versions of the mod (links below). They fight over the same bars.[/h3]
 
+[h2]What's new in 0.4.0[/h2]
+[b]Separate slots per save[/b] (optional, off by default): each save keeps its own slots, bar positions and hidden state; a new save starts with a copy of your shared set (thanks MD for the request). Every Mod Options text is now translated in all six languages, and four tick boxes now show their tooltips. The Chinese, Spanish, French and Russian additions are machine translated — corrections are welcome in the comments.
+
 [h2]What's new in 0.3.0[/h2]
 [list]
 [*]Rewritten in plain Lua for Build 42.21 (the TypeScript toolchain it used is dead)
@@ -71,8 +74,9 @@ Options → MODS → [i]Quick slots mod[/i]:
 [*]Simple delete button, show delete button, show tooltip
 [*]Hide bars in a vehicle
 [*]Per-slot keybinds, bar 1 slots 1–9
+[*]Separate slots per save (off by default)
 [/list]
-Slots, bar layout and settings are stored in Zomboid/Lua/pzhotbar42.txt. On first run the mod imports the settings of the older versions (pzhotbar.ini, bzhotbar.ini).
+Slots, bar layout and settings are stored in Zomboid/Lua/pzhotbar42.txt. On first run the mod imports the settings of the older versions (pzhotbar.ini, bzhotbar.ini). With [i]Separate slots per save[/i] on, each save keeps its slots, bar positions and hidden state in Zomboid/Lua/pzhotbar42_<game mode>_<save>.txt; the settings above stay shared. Turning the option off in game brings back the shared set; turning it on again brings back the save's set. Files of deleted saves are not removed.
 
 [h2]Languages[/h2]
 English, Czech, French (@Bobitec + Google), Spanish (@WhiteLotus + Google), Chinese, Russian.
