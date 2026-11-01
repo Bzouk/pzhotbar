@@ -177,12 +177,14 @@ against the [Umbrella](https://github.com/PZ-Umbrella/Umbrella) typings, expecte
 scripts/check.sh
 ```
 
-The config file reader and writer have a plain Lua test that runs outside the game, and a second
-one checks that every language has the same translation keys and `%1` placeholders as EN:
+The config file reader and writer have a plain Lua test that runs outside the game, a second
+one checks that every language has the same translation keys and `%1` placeholders as EN, and
+a third one checks what the slot status bars show for each kind of item:
 
 ```bash
 lua tests/config_test.lua
 lua tests/translations_test.lua
+lua tests/slot_indicators_test.lua
 ```
 
 `scripts/build.sh` builds the Workshop item into `build/Workshop/BZQuickSlots`:
