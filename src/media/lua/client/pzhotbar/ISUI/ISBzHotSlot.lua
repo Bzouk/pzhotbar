@@ -270,6 +270,11 @@ function ISBzHotSlot:drawIndicators(iconBoxSize)
         local r, g, b = SlotIndicators.color(indicator)
         self:drawRect(x, y, width, INDICATOR_BAR_HEIGHT, 0.28, r, g, b)
         self:drawRect(x, y, width * indicator.fraction, INDICATOR_BAR_HEIGHT, 0.95, r, g, b)
+        if SlotIndicators.fitsDividers(indicator, width) then
+            for unit = 1, indicator.units - 1 do
+                self:drawRect(x + math.floor(width * unit / indicator.units), y, 1, INDICATOR_BAR_HEIGHT, 0.8, 0.08, 0.09, 0.1)
+            end
+        end
     end
     return #indicators * INDICATOR_BAR_HEIGHT + 1
 end

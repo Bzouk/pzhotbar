@@ -22,6 +22,8 @@ function instanceof(item, class)
     return item.classes ~= nil and item.classes[class] == true
 end
 
+local NEVER_ROTS = 1000000000
+
 local function fakeItem(classes, fields)
     local item = {
         classes = {},
@@ -31,10 +33,13 @@ local function fakeItem(classes, fields)
         hasComponent = function() return fields.fluid ~= nil end,
         getFluidContainer = function() return fields.fluid end,
         getCurrentUsesFloat = function() return fields.uses end,
+        getCurrentUses = function() return fields.currentUses or 0 end,
+        getMaxUses = function() return fields.maxUses or 0 end,
         getCondition = function() return fields.condition end,
         getConditionMax = function() return fields.conditionMax end,
         getMeltingTime = function() return fields.meltingTime or 0 end,
-        getHungerChange = function() return fields.hunger or 0 end,
+        getAge = function() return fields.age or 0 end,
+        getOffAgeMax = function() return fields.offAgeMax or NEVER_ROTS end,
     }
     for _, class in ipairs(classes) do
         item.classes[class] = true
@@ -71,16 +76,21 @@ assert(#SlotIndicators.read(fakeItem({ "ComboItem" }, {})) == 0)
 local weapon = single(fakeItem({ "HandWeapon" }, { condition = 3, conditionMax = 10 }))
 assert(weapon.kind == "condition" and weapon.fraction == 0.3)
 
--- pills and other plain drainables are a quantity
-local pills = single(fakeItem({ "DrainableComboItem" }, { uses = 0.7, type = "PillsBeta" }))
-assert(pills.kind == "remaining" and pills.fraction == 0.7)
+-- pills and other plain drainables count whole doses, one unit per dose
+local pills = single(fakeItem({ "DrainableComboItem" }, { currentUses = 7, maxUses = 10, type = "PillsBeta" }))
+assert(pills.kind == "remaining" and pills.fraction == 0.7 and pills.units == 10)
+-- nothing to divide without a scale
+local noScale = single(fakeItem({ "DrainableComboItem" }, { uses = 0.4 }))
+assert(noScale.kind == "remaining" and noScale.fraction == 0.4 and noScale.units == nil)
 
 -- charge: by tag, and the loose batteries that have no tag
-assert(single(fakeItem({ "DrainableComboItem" }, { uses = 1, tags = { FLASHLIGHT = true } })).kind == "charge")
+local flashlight = single(fakeItem({ "DrainableComboItem" }, { uses = 1, maxUses = 50, tags = { FLASHLIGHT = true } }))
+assert(flashlight.kind == "charge" and flashlight.units == nil)
 assert(single(fakeItem({ "DrainableComboItem" }, { uses = 1, type = "Battery" })).kind == "charge")
 
 -- fuel: by tag, and the older drainables that have no tag
-assert(single(fakeItem({ "DrainableComboItem" }, { uses = 1, tags = { LIGHTER = true } })).kind == "fuel")
+local lighter = single(fakeItem({ "DrainableComboItem" }, { uses = 1, maxUses = 50, tags = { LIGHTER = true } }))
+assert(lighter.kind == "fuel" and lighter.units == nil)
 -- burnable is not fuel in the item: IS_FIRE_FUEL must stay out of the check (ItemTag stand-in rejects it)
 assert(single(fakeItem({ "DrainableComboItem" }, { uses = 1, type = "PropaneTank" })).kind == "fuel")
 
@@ -97,15 +107,16 @@ local hidden = { HIDE_REMAINING = true }
 assert(#SlotIndicators.read(fakeItem({ "DrainableComboItem" }, { uses = 1, tags = hidden })) == 0)
 assert(#SlotIndicators.read(fakeItem({ "ComboItem" }, { fluid = fakeFluid(1), tags = hidden })) == 0)
 
--- food: melting wins over hunger, hunger is capped at a full bar
-local melting = single(fakeItem({ "Food" }, { meltingTime = 40, hunger = -0.5 }))
+-- food: melting wins over freshness
+local melting = single(fakeItem({ "Food" }, { meltingTime = 40, age = 1, offAgeMax = 4 }))
 assert(melting.kind == "melting" and melting.fraction == 0.4)
-local hunger = single(fakeItem({ "Food" }, { hunger = -0.25 }))
-assert(hunger.kind == "hunger" and hunger.fraction == 0.25)
-assert(single(fakeItem({ "Food" }, { hunger = -1.5 })).fraction == 1)
+local freshness = single(fakeItem({ "Food" }, { age = 1, offAgeMax = 4 }))
+assert(freshness.kind == "freshness" and freshness.fraction == 0.75)
+-- rotten stays at an empty bar
+assert(single(fakeItem({ "Food" }, { age = 9, offAgeMax = 4 })).fraction == 0)
+-- food that does not rot has no bar
 assert(#SlotIndicators.read(fakeItem({ "Food" }, {})) == 0)
--- food that makes you hungrier has nothing to show
-assert(#SlotIndicators.read(fakeItem({ "Food" }, { hunger = 0.1 })) == 0)
+assert(#SlotIndicators.read(fakeItem({ "Food" }, { offAgeMax = 0 })) == 0)
 
 -- a weapon without a condition scale has no bar
 assert(#SlotIndicators.read(fakeItem({ "HandWeapon" }, { condition = 0, conditionMax = 0 })) == 0)
@@ -118,8 +129,14 @@ assert(colorOf("remaining", 1) ~= colorOf("fuel", 1))
 assert(colorOf("condition", 0.2) == colorOf("condition", 1))
 assert(colorOf("condition", 0.19) == colorOf("volume", 0.19))
 assert(colorOf("condition", 0.19) ~= colorOf("condition", 1))
--- hunger and thawing are not levels to run out of
-assert(colorOf("hunger", 0.1) == colorOf("hunger", 1))
+-- thawing is not a level to run out of
 assert(colorOf("melting", 0.1) == colorOf("melting", 1))
+assert(colorOf("freshness", 1) == colorOf("condition", 1))
+
+-- dividers: only when one unit is at least 4 px wide
+assert(SlotIndicators.fitsDividers({ kind = "remaining", fraction = 1, units = 10 }, 43))
+assert(not SlotIndicators.fitsDividers({ kind = "remaining", fraction = 1, units = 12 }, 43))
+assert(not SlotIndicators.fitsDividers({ kind = "remaining", fraction = 1, units = 1 }, 43))
+assert(not SlotIndicators.fitsDividers({ kind = "remaining", fraction = 1 }, 43))
 
 print("slot_indicators_test ok")

@@ -1,11 +1,13 @@
 -- What the status bars of a slot show for an item: kind + fraction 0-1, one entry per bar.
+-- With units the bar is divided, one part per real unit (a dose, a round).
 local SlotIndicators = {}
 
----@alias BzIndicatorKind "condition"|"volume"|"fuel"|"charge"|"remaining"|"melting"|"hunger"
+---@alias BzIndicatorKind "condition"|"volume"|"fuel"|"charge"|"remaining"|"melting"|"freshness"
 
 ---@class BzIndicator
 ---@field kind BzIndicatorKind
 ---@field fraction number
+---@field units integer?
 
 local LOW_FRACTION = 0.2
 local LOW_COLOR = {r = 0.95, g = 0.25, b = 0.18}
@@ -22,11 +24,14 @@ local KIND_COLORS = {
     fuel = YELLOW,
     charge = YELLOW,
     remaining = GRAY,
-    hunger = {r = 0.678, g = 1, b = 0.384},
+    freshness = GREEN,
 }
 
--- Not levels that run out: a whole food often sits below LOW_FRACTION, thawing is no shortage.
-local NEVER_LOW = {hunger = true, melting = true}
+-- Thawing is no shortage.
+local NEVER_LOW = {melting = true}
+
+local MIN_UNIT_WIDTH = 4
+local NEVER_ROTS = 1000000000
 
 -- First match wins.
 local KIND_BY_TAG = {
@@ -69,9 +74,22 @@ end
 
 ---@param kind BzIndicatorKind
 ---@param fraction number
+---@param units integer?
 ---@return BzIndicator
-local function indicator(kind, fraction)
-    return {kind = kind, fraction = math.max(0, math.min(1, fraction))}
+local function indicator(kind, fraction, units)
+    return {kind = kind, fraction = math.max(0, math.min(1, fraction)), units = units}
+end
+
+--- Doses for plain drainables; for charge and fuel the use ticks are not real units.
+---@param item InventoryItem
+---@return BzIndicator
+local function drainableIndicator(item)
+    local kind = drainableKind(item)
+    local maxUses = item:getMaxUses()
+    if kind == "remaining" and maxUses > 0 then
+        return indicator(kind, item:getCurrentUses() / maxUses, maxUses)
+    end
+    return indicator(kind, item:getCurrentUsesFloat())
 end
 
 ---@param item InventoryItem?
@@ -92,7 +110,7 @@ function SlotIndicators.read(item)
         if item:hasTag(ItemTag.HIDE_REMAINING) then
             return {}
         end
-        return {indicator(drainableKind(item), item:getCurrentUsesFloat())}
+        return {drainableIndicator(item)}
     end
     if instanceof(item, "ComboItem") then
         if item:hasComponent(ComponentType.FluidContainer) and not item:hasTag(ItemTag.HIDE_REMAINING) then
@@ -108,12 +126,21 @@ function SlotIndicators.read(item)
         if meltingTime > 0 then
             return {indicator("melting", meltingTime / 100)}
         end
-        local hunger = item:getHungerChange()
-        if hunger < 0 then
-            return {indicator("hunger", -hunger)}
+        local offAgeMax = item:getOffAgeMax()
+        if offAgeMax > 0 and offAgeMax < NEVER_ROTS then
+            return {indicator("freshness", 1 - item:getAge() / offAgeMax)}
         end
     end
     return {}
+end
+
+--- Whether a bar this wide can show the indicator's units as dividers.
+---@param indicator BzIndicator
+---@param width number
+---@return boolean
+function SlotIndicators.fitsDividers(indicator, width)
+    local units = indicator.units
+    return units ~= nil and units > 1 and width / units >= MIN_UNIT_WIDTH
 end
 
 ---@param indicator BzIndicator
