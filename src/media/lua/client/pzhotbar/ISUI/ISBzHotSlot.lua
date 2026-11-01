@@ -285,6 +285,12 @@ function ISBzHotSlot:prerender()
         self:drawRectBorderStatic(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
     end
     local itemInfo = self.itemInfo
+    if ISMouseDrag.dragging and self:isMouseOver() then
+        self:drawRectBorder(0, 0, self.width, self.height, 1, 1, 0.56, 0.12)
+        self:drawRectBorder(1, 1, self.width - 2, self.height - 2, 1, 1, 0.56, 0.12)
+    elseif hasItem(itemInfo) and self:isMouseOver() then
+        self:drawRect(0, 0, self.width, self.height, 0.1, 1, 1, 1)
+    end
     if not hasItem(itemInfo) then
         if self.removeButton ~= nil then
             self.removeButton:setVisible(false)
