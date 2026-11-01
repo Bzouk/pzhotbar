@@ -4,6 +4,7 @@
 ---@field texture Texture?
 ---@field isPoison boolean?
 ---@field isFrozen boolean?
+---@field item InventoryItem? the best copy found by the last recount
 ---@field indicators BzIndicator[]?
 
 ---@class ISBzHotSlot: ISPanel
@@ -243,6 +244,7 @@ function ISBzHotSlot:updateItem()
         end
     end
     local itemFromInv = playerInventory:getBestEvalArgRecurse(predicateItem, predicateBestItem, itemInfo.itemFullName)
+    itemInfo.item = itemFromInv
     itemInfo.indicators = SlotIndicators.read(itemFromInv)
     itemInfo.isPoison = false
     itemInfo.isFrozen = false
@@ -270,6 +272,11 @@ function ISBzHotSlot:drawIndicators(iconBoxSize)
         local r, g, b = SlotIndicators.color(indicator)
         self:drawRect(x, y, width, INDICATOR_BAR_HEIGHT, 0.28, r, g, b)
         self:drawRect(x, y, width * indicator.fraction, INDICATOR_BAR_HEIGHT, 0.95, r, g, b)
+        if SlotIndicators.fitsDividers(indicator, width) then
+            for unit = 1, indicator.units - 1 do
+                self:drawRect(x + math.floor(width * unit / indicator.units), y, 1, INDICATOR_BAR_HEIGHT, 0.8, 0.08, 0.09, 0.1)
+            end
+        end
     end
     return #indicators * INDICATOR_BAR_HEIGHT + 1
 end
@@ -280,6 +287,13 @@ function ISBzHotSlot:prerender()
         self:drawRectBorderStatic(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
     end
     local itemInfo = self.itemInfo
+    local hovered = self:isMouseOver()
+    if hovered and ISMouseDrag.dragging then
+        self:drawRectBorder(0, 0, self.width, self.height, 1, 1, 0.56, 0.12)
+        self:drawRectBorder(1, 1, self.width - 2, self.height - 2, 1, 1, 0.56, 0.12)
+    elseif hovered and hasItem(itemInfo) then
+        self:drawRect(0, 0, self.width, self.height, 0.1, 1, 1, 1)
+    end
     if not hasItem(itemInfo) then
         if self.removeButton ~= nil then
             self.removeButton:setVisible(false)
@@ -299,10 +313,18 @@ function ISBzHotSlot:prerender()
     if playerInventory:isDrawDirty() then
         self.updatePending = true
     end
-    if self.updatePending and getTimestampMs() >= (self.nextUpdate or 0) then
-        self.updatePending = false
-        self.nextUpdate = getTimestampMs() + UPDATE_MS
-        self:updateItem()
+    -- Ammo, age and power change without the flag: reread the same item, no inventory walk.
+    if self.updatePending or SlotIndicators.changesSilently(itemInfo.indicators) then
+        local now = getTimestampMs()
+        if now >= (self.nextUpdate or 0) then
+            self.nextUpdate = now + UPDATE_MS
+            if self.updatePending then
+                self.updatePending = false
+                self:updateItem()
+            else
+                itemInfo.indicators = SlotIndicators.read(itemInfo.item)
+            end
+        end
     end
     local iconBoxSize = self.height
     if self.showDelete then
