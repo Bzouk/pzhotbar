@@ -32,6 +32,9 @@ local KIND_COLORS = {
 -- Thawing is no shortage.
 local NEVER_LOW = {melting = true}
 
+-- These change without setting the inventory's drawDirty flag.
+local SILENT_KINDS = {ammo = true, charge = true, freshness = true, frozen = true, melting = true}
+
 local MIN_UNIT_WIDTH = 4
 local NEVER_ROTS = 1000000000
 
@@ -148,6 +151,18 @@ function SlotIndicators.read(item)
         end
     end
     return {}
+end
+
+--- Whether the bars can change while the inventory stays clean, so they need polling.
+---@param indicators BzIndicator[]?
+---@return boolean
+function SlotIndicators.changesSilently(indicators)
+    for _, indicator in ipairs(indicators or {}) do
+        if SILENT_KINDS[indicator.kind] then
+            return true
+        end
+    end
+    return false
 end
 
 --- Whether a bar this wide can show the indicator's units as dividers.

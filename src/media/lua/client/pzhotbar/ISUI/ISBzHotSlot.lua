@@ -4,6 +4,7 @@
 ---@field texture Texture?
 ---@field isPoison boolean?
 ---@field isFrozen boolean?
+---@field item InventoryItem? the best copy found by the last recount
 ---@field indicators BzIndicator[]?
 
 ---@class ISBzHotSlot: ISPanel
@@ -243,6 +244,7 @@ function ISBzHotSlot:updateItem()
         end
     end
     local itemFromInv = playerInventory:getBestEvalArgRecurse(predicateItem, predicateBestItem, itemInfo.itemFullName)
+    itemInfo.item = itemFromInv
     itemInfo.indicators = SlotIndicators.read(itemFromInv)
     itemInfo.isPoison = false
     itemInfo.isFrozen = false
@@ -308,14 +310,21 @@ function ISBzHotSlot:prerender()
     end
     -- Only the vanilla inventory pane clears drawDirty, so while it is collapsed the
     -- flag stays set: recount at most every UPDATE_MS, but never miss a change.
-    -- Ammo, freshness and radio power change without setting it, so a bar always recounts.
-    if playerInventory:isDrawDirty() or #(itemInfo.indicators or {}) > 0 then
+    if playerInventory:isDrawDirty() then
         self.updatePending = true
     end
-    if self.updatePending and getTimestampMs() >= (self.nextUpdate or 0) then
-        self.updatePending = false
-        self.nextUpdate = getTimestampMs() + UPDATE_MS
-        self:updateItem()
+    -- Ammo, age and power change without the flag: reread the same item, no inventory walk.
+    if self.updatePending or SlotIndicators.changesSilently(itemInfo.indicators) then
+        local now = getTimestampMs()
+        if now >= (self.nextUpdate or 0) then
+            self.nextUpdate = now + UPDATE_MS
+            if self.updatePending then
+                self.updatePending = false
+                self:updateItem()
+            else
+                itemInfo.indicators = SlotIndicators.read(itemInfo.item)
+            end
+        end
     end
     local iconBoxSize = self.height
     if self.showDelete then

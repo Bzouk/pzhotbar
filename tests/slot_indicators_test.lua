@@ -171,6 +171,17 @@ assert(colorOf("melting", 0.1) == colorOf("melting", 1))
 assert(colorOf("freshness", 1) == colorOf("condition", 1))
 assert(colorOf("ammo", 1) == colorOf("remaining", 1))
 
+-- only what changes without touching the inventory needs a recount
+local function silent(kind)
+    return SlotIndicators.changesSilently({ { kind = kind, fraction = 1 } })
+end
+assert(silent("ammo") and silent("charge") and silent("freshness") and silent("frozen") and silent("melting"))
+assert(not silent("condition") and not silent("volume") and not silent("remaining") and not silent("fuel"))
+assert(not SlotIndicators.changesSilently({}))
+assert(not SlotIndicators.changesSilently(nil))
+-- one silent bar is enough
+assert(SlotIndicators.changesSilently({ { kind = "condition", fraction = 1 }, { kind = "ammo", fraction = 1 } }))
+
 -- dividers: only when one unit is at least 4 px wide
 assert(SlotIndicators.fitsDividers({ kind = "remaining", fraction = 1, units = 10 }, 43))
 assert(not SlotIndicators.fitsDividers({ kind = "remaining", fraction = 1, units = 12 }, 43))
