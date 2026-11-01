@@ -28,30 +28,32 @@ local KIND_COLORS = {
 -- Not levels that run out: a whole food often sits below LOW_FRACTION, thawing is no shortage.
 local NEVER_LOW = {hunger = true, melting = true}
 
+-- First match wins.
+local KIND_BY_TAG = {
+    {tag = ItemTag.CAR_BATTERY, kind = "charge"},
+    {tag = ItemTag.FLASHLIGHT, kind = "charge"},
+    {tag = ItemTag.LIGHTER, kind = "fuel"},
+    {tag = ItemTag.BLOW_TORCH, kind = "fuel"},
+    {tag = ItemTag.LIGHTER_FLUID, kind = "fuel"},
+}
 -- Loose batteries and older tools have no tag to go by.
-local CHARGE_TYPES = {Battery = true, Lighter_Battery = true}
-local FUEL_TYPES = {BlowTorch = true, PropaneTank = true, LighterFluid = true}
-
----@param item InventoryItem
-local function isCharge(item)
-    return item:hasTag(ItemTag.CAR_BATTERY) or item:hasTag(ItemTag.FLASHLIGHT) or CHARGE_TYPES[item:getType()] == true
-end
-
----@param item InventoryItem
-local function isFuel(item)
-    return item:hasTag(ItemTag.LIGHTER) or item:hasTag(ItemTag.BLOW_TORCH) or item:hasTag(ItemTag.LIGHTER_FLUID)
-        or FUEL_TYPES[item:getType()] == true
-end
+local KIND_BY_TYPE = {
+    Battery = "charge",
+    Lighter_Battery = "charge",
+    BlowTorch = "fuel",
+    PropaneTank = "fuel",
+    LighterFluid = "fuel",
+}
 
 ---@param item InventoryItem
 ---@return BzIndicatorKind
 local function drainableKind(item)
-    if isCharge(item) then
-        return "charge"
-    elseif isFuel(item) then
-        return "fuel"
+    for _, entry in ipairs(KIND_BY_TAG) do
+        if item:hasTag(entry.tag) then
+            return entry.kind
+        end
     end
-    return "remaining"
+    return KIND_BY_TYPE[item:getType()] or "remaining"
 end
 
 ---@param fluid FluidContainer

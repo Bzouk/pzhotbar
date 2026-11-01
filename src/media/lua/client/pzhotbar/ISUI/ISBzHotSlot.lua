@@ -4,7 +4,7 @@
 ---@field texture Texture?
 ---@field isPoison boolean?
 ---@field isFrozen boolean?
----@field indicators BzIndicator[]
+---@field indicators BzIndicator[]?
 
 ---@class ISBzHotSlot: ISPanel
 ---@field slotNum integer
@@ -120,7 +120,7 @@ function ISBzHotSlot:new(x, y, width, height, itemTable, slot, deleteButText, sh
     o.borderColor = {r = 0.4, g = 0.4, b = 0.4, a = 1}
     o.slotNum = slot
     o.items = itemTable
-    o.itemInfo = {itemFullName = itemTable[slot], indicators = {}}
+    o.itemInfo = {itemFullName = itemTable[slot]}
     o:updateItem()
     o.deleteButText = deleteButText
     o.showDelete = showDelete
@@ -130,7 +130,7 @@ function ISBzHotSlot:new(x, y, width, height, itemTable, slot, deleteButText, sh
 end
 
 function ISBzHotSlot:removeItem()
-    self.itemInfo = {indicators = {}}
+    self.itemInfo = {}
     self.items[self.slotNum] = nil
     self:updateItem()
 end
@@ -258,7 +258,7 @@ end
 ---@param iconBoxSize number
 ---@return number height all bars together take, 0 without bars
 function ISBzHotSlot:drawIndicators(iconBoxSize)
-    local indicators = self.itemInfo.indicators
+    local indicators = self.itemInfo.indicators or {}
     if #indicators == 0 then
         return 0
     end

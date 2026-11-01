@@ -5,12 +5,12 @@ package.path = "src/media/lua/client/?.lua;" .. package.path
 next, unpack, table.unpack = nil, nil, nil
 
 -- stand-ins for the game's enums and item classes
+local KNOWN_TAGS = { CAR_BATTERY = 1, FLASHLIGHT = 1, LIGHTER = 1, BLOW_TORCH = 1, LIGHTER_FLUID = 1, HIDE_REMAINING = 1 }
 -- set by name: a plain assignment would redefine these types for the type check of the whole mod
 local enums = {
     -- only tags that exist in 42.21: anything else is a typo and fails like nil would in the game
     ItemTag = setmetatable({}, { __index = function(_, name)
-        local known = { CAR_BATTERY = 1, FLASHLIGHT = 1, LIGHTER = 1, BLOW_TORCH = 1, LIGHTER_FLUID = 1, HIDE_REMAINING = 1 }
-        return known[name] and name or error("unknown ItemTag " .. name)
+        return KNOWN_TAGS[name] and name or error("unknown ItemTag " .. name)
     end }),
     ComponentType = { FluidContainer = "FluidContainer" },
     FluidCategory = { Fuel = "Fuel" },
