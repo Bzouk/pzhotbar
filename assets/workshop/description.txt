@@ -11,6 +11,7 @@ Quick access bars for items. Drag an item into a slot and use it with one click 
 
 [h2]What's new in 0.4.0[/h2]
 [b]Separate slots per save[/b] (optional, off by default): each save keeps its own slots, bar positions and hidden state; a new save starts with a copy of your shared set (thanks MD for the request). Every Mod Options text is now translated in all six languages, and four tick boxes now show their tooltips. The Chinese, Spanish, French and Russian additions are machine translated — corrections are welcome in the comments.
+0.4.1: left click on a mask filter puts it into your worn respirator or gas mask (thanks Furizu for the idea), and slots recount right after a craft finishes.
 
 [h2]What's new in 0.3.0[/h2]
 [list]
@@ -59,6 +60,7 @@ If you cancel the action (start running, etc.) the item stays in your main inven
 [tr][td]Plantain Cataplasm[/td][td]Applies to one scratched, deep wounded or cut part.[/td][/tr]
 [tr][td]Splint[/td][td]Applies to a fractured part that has none.[/td][/tr]
 [tr][td]Radio[/td][td]Equips or unequips.[/td][/tr]
+[tr][td]Respirator or gas mask filter[/td][td]With a matching mask on, puts the filter in.[/td][/tr]
 [tr][td]Anything else[/td][td]Nothing — use right click.[/td][/tr]
 [/table]
 
