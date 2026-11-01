@@ -2,7 +2,7 @@
 -- With units the bar is divided, one part per real unit (a dose, a round).
 local SlotIndicators = {}
 
----@alias BzIndicatorKind "condition"|"volume"|"fuel"|"charge"|"remaining"|"ammo"|"melting"|"freshness"
+---@alias BzIndicatorKind "condition"|"volume"|"fuel"|"charge"|"remaining"|"ammo"|"melting"|"frozen"|"freshness"
 
 ---@class BzIndicator
 ---@field kind BzIndicatorKind
@@ -21,6 +21,7 @@ local KIND_COLORS = {
     condition = GREEN,
     volume = BLUE,
     melting = BLUE,
+    frozen = BLUE,
     fuel = YELLOW,
     charge = YELLOW,
     remaining = GRAY,
@@ -142,7 +143,7 @@ function SlotIndicators.read(item)
         end
         local offAgeMax = item:getOffAgeMax()
         if offAgeMax > 0 and offAgeMax < NEVER_ROTS then
-            return {indicator("freshness", 1 - item:getAge() / offAgeMax)}
+            return {indicator(item:isFrozen() and "frozen" or "freshness", 1 - item:getAge() / offAgeMax)}
         end
     end
     return {}

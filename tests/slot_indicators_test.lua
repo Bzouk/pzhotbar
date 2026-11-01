@@ -41,6 +41,7 @@ local function fakeItem(classes, fields)
         getMaxAmmo = function() return fields.maxAmmo or 0 end,
         getCurrentAmmoCount = function() return fields.ammo or 0 end,
         getDeviceData = function() return fields.device end,
+        isFrozen = function() return fields.frozen == true end,
         getAge = function() return fields.age or 0 end,
         getOffAgeMax = function() return fields.offAgeMax or NEVER_ROTS end,
     }
@@ -135,6 +136,10 @@ local melting = single(fakeItem({ "Food" }, { meltingTime = 40, age = 1, offAgeM
 assert(melting.kind == "melting" and melting.fraction == 0.4)
 local freshness = single(fakeItem({ "Food" }, { age = 1, offAgeMax = 4 }))
 assert(freshness.kind == "freshness" and freshness.fraction == 0.75)
+-- frozen food is still its freshness, in the hue of cold
+local frozen = single(fakeItem({ "Food" }, { frozen = true, age = 1, offAgeMax = 4 }))
+assert(frozen.kind == "frozen" and frozen.fraction == 0.75)
+assert(colorOf("frozen", 1) == colorOf("melting", 1))
 -- rotten stays at an empty bar
 assert(single(fakeItem({ "Food" }, { age = 9, offAgeMax = 4 })).fraction == 0)
 -- food that does not rot has no bar
