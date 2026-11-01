@@ -7,7 +7,11 @@ next, unpack, table.unpack = nil, nil, nil
 -- stand-ins for the game's enums and item classes
 -- set by name: a plain assignment would redefine these types for the type check of the whole mod
 local enums = {
-    ItemTag = setmetatable({}, { __index = function(_, name) return name end }),
+    -- only tags that exist in 42.21: anything else is a typo and fails like nil would in the game
+    ItemTag = setmetatable({}, { __index = function(_, name)
+        local known = { CAR_BATTERY = 1, FLASHLIGHT = 1, LIGHTER = 1, BLOW_TORCH = 1, LIGHTER_FLUID = 1, HIDE_REMAINING = 1 }
+        return known[name] and name or error("unknown ItemTag " .. name)
+    end }),
     ComponentType = { FluidContainer = "FluidContainer" },
     FluidCategory = { Fuel = "Fuel" },
 }
@@ -77,6 +81,7 @@ assert(single(fakeItem({ "DrainableComboItem" }, { uses = 1, type = "Battery" })
 
 -- fuel: by tag, and the older drainables that have no tag
 assert(single(fakeItem({ "DrainableComboItem" }, { uses = 1, tags = { LIGHTER = true } })).kind == "fuel")
+-- burnable is not fuel in the item: IS_FIRE_FUEL must stay out of the check (ItemTag stand-in rejects it)
 assert(single(fakeItem({ "DrainableComboItem" }, { uses = 1, type = "PropaneTank" })).kind == "fuel")
 
 -- fluids go by what is inside, not by the bottle
@@ -99,6 +104,11 @@ local hunger = single(fakeItem({ "Food" }, { hunger = -0.25 }))
 assert(hunger.kind == "hunger" and hunger.fraction == 0.25)
 assert(single(fakeItem({ "Food" }, { hunger = -1.5 })).fraction == 1)
 assert(#SlotIndicators.read(fakeItem({ "Food" }, {})) == 0)
+-- food that makes you hungrier has nothing to show
+assert(#SlotIndicators.read(fakeItem({ "Food" }, { hunger = 0.1 })) == 0)
+
+-- a weapon without a condition scale has no bar
+assert(#SlotIndicators.read(fakeItem({ "HandWeapon" }, { condition = 0, conditionMax = 0 })) == 0)
 
 -- color: the hue names the kind, below 20% everything turns the same red
 assert(colorOf("condition", 1) ~= colorOf("volume", 1))
@@ -108,7 +118,8 @@ assert(colorOf("remaining", 1) ~= colorOf("fuel", 1))
 assert(colorOf("condition", 0.2) == colorOf("condition", 1))
 assert(colorOf("condition", 0.19) == colorOf("volume", 0.19))
 assert(colorOf("condition", 0.19) ~= colorOf("condition", 1))
--- hunger is not a level to run out of
+-- hunger and thawing are not levels to run out of
 assert(colorOf("hunger", 0.1) == colorOf("hunger", 1))
+assert(colorOf("melting", 0.1) == colorOf("melting", 1))
 
 print("slot_indicators_test ok")

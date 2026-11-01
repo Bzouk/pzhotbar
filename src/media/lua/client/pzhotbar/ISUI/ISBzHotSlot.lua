@@ -221,7 +221,7 @@ function ISBzHotSlot:setItem(invItem)
     end
 end
 
---- Recounts the item and computes the status bar (condition, fill, freshness).
+--- Recounts the item and reads what its status bars show.
 function ISBzHotSlot:updateItem()
     local itemInfo = self.itemInfo
     if not hasItem(itemInfo) then
@@ -269,7 +269,7 @@ function ISBzHotSlot:drawIndicators(iconBoxSize)
         local y = bottom - i * INDICATOR_BAR_HEIGHT
         local r, g, b = SlotIndicators.color(indicator)
         self:drawRect(x, y, width, INDICATOR_BAR_HEIGHT, 0.28, r, g, b)
-        self:drawRect(x, y, width * math.max(0, math.min(1, indicator.fraction)), INDICATOR_BAR_HEIGHT, 0.95, r, g, b)
+        self:drawRect(x, y, width * indicator.fraction, INDICATOR_BAR_HEIGHT, 0.95, r, g, b)
     end
     return #indicators * INDICATOR_BAR_HEIGHT + 1
 end

@@ -25,8 +25,8 @@ local KIND_COLORS = {
     hunger = {r = 0.678, g = 1, b = 0.384},
 }
 
--- Not a level that runs out: a typical food sits below LOW_FRACTION when it is whole.
-local NEVER_LOW = {hunger = true}
+-- Not levels that run out: a whole food often sits below LOW_FRACTION, thawing is no shortage.
+local NEVER_LOW = {hunger = true, melting = true}
 
 -- Loose batteries and older tools have no tag to go by.
 local CHARGE_TYPES = {Battery = true, Lighter_Battery = true}
@@ -40,7 +40,7 @@ end
 ---@param item InventoryItem
 local function isFuel(item)
     return item:hasTag(ItemTag.LIGHTER) or item:hasTag(ItemTag.BLOW_TORCH) or item:hasTag(ItemTag.LIGHTER_FLUID)
-        or item:hasTag(ItemTag.IS_FIRE_FUEL) or FUEL_TYPES[item:getType()] == true
+        or FUEL_TYPES[item:getType()] == true
 end
 
 ---@param item InventoryItem
@@ -65,6 +65,13 @@ local function fluidKind(fluid)
     return "volume"
 end
 
+---@param kind BzIndicatorKind
+---@param fraction number
+---@return BzIndicator
+local function indicator(kind, fraction)
+    return {kind = kind, fraction = math.max(0, math.min(1, fraction))}
+end
+
 ---@param item InventoryItem?
 ---@return BzIndicator[]
 function SlotIndicators.read(item)
@@ -73,18 +80,22 @@ function SlotIndicators.read(item)
     end
     if instanceof(item, "HandWeapon") then
         ---@cast item HandWeapon
-        return {{kind = "condition", fraction = item:getCondition() / item:getConditionMax()}}
+        local conditionMax = item:getConditionMax()
+        if conditionMax <= 0 then
+            return {}
+        end
+        return {indicator("condition", item:getCondition() / conditionMax)}
     end
     if instanceof(item, "DrainableComboItem") then
         if item:hasTag(ItemTag.HIDE_REMAINING) then
             return {}
         end
-        return {{kind = drainableKind(item), fraction = item:getCurrentUsesFloat()}}
+        return {indicator(drainableKind(item), item:getCurrentUsesFloat())}
     end
     if instanceof(item, "ComboItem") then
         if item:hasComponent(ComponentType.FluidContainer) and not item:hasTag(ItemTag.HIDE_REMAINING) then
             local fluid = item:getFluidContainer()
-            return {{kind = fluidKind(fluid), fraction = fluid:getFilledRatio()}}
+            return {indicator(fluidKind(fluid), fluid:getFilledRatio())}
         end
         return {}
     end
@@ -93,11 +104,11 @@ function SlotIndicators.read(item)
         ---@cast item Food
         local meltingTime = item:getMeltingTime()
         if meltingTime > 0 then
-            return {{kind = "melting", fraction = math.min(1, meltingTime / 100)}}
+            return {indicator("melting", meltingTime / 100)}
         end
         local hunger = item:getHungerChange()
-        if hunger ~= 0 then
-            return {{kind = "hunger", fraction = math.min(1, math.abs(hunger))}}
+        if hunger < 0 then
+            return {indicator("hunger", -hunger)}
         end
     end
     return {}
