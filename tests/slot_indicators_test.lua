@@ -40,6 +40,7 @@ local function fakeItem(classes, fields)
         getMeltingTime = function() return fields.meltingTime or 0 end,
         getMaxAmmo = function() return fields.maxAmmo or 0 end,
         getCurrentAmmoCount = function() return fields.ammo or 0 end,
+        isRoundChambered = function() return fields.chambered == true end,
         getDeviceData = function() return fields.device end,
         isFrozen = function() return fields.frozen == true end,
         getAge = function() return fields.age or 0 end,
@@ -85,6 +86,12 @@ local gun = SlotIndicators.read(fakeItem({ "HandWeapon" }, { condition = 5, cond
 assert(#gun == 2)
 assert(gun[1].kind == "ammo" and gun[1].fraction == 0.2 and gun[1].units == 15)
 assert(gun[2].kind == "condition" and gun[2].fraction == 0.5)
+
+-- the chambered round is a round too, even above the magazine size
+local chambered = SlotIndicators.read(fakeItem({ "HandWeapon" }, { condition = 5, conditionMax = 10, ammo = 2, maxAmmo = 15, chambered = true }))
+assert(chambered[1].fraction == 0.2)
+local topped = SlotIndicators.read(fakeItem({ "HandWeapon" }, { condition = 5, conditionMax = 10, ammo = 15, maxAmmo = 15, chambered = true }))
+assert(topped[1].fraction == 1)
 
 -- a radio shows its battery and nothing else
 local function fakeDevice(batteryPowered, hasBattery, power)
@@ -140,6 +147,8 @@ assert(freshness.kind == "freshness" and freshness.fraction == 0.75)
 local frozen = single(fakeItem({ "Food" }, { frozen = true, age = 1, offAgeMax = 4 }))
 assert(frozen.kind == "frozen" and frozen.fraction == 0.75)
 assert(colorOf("frozen", 1) == colorOf("melting", 1))
+-- about to rot once thawed: the red warning stays
+assert(colorOf("frozen", 0.1) == colorOf("volume", 0.1))
 -- rotten stays at an empty bar
 assert(single(fakeItem({ "Food" }, { age = 9, offAgeMax = 4 })).fraction == 0)
 -- food that does not rot has no bar

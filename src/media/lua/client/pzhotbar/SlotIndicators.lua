@@ -113,7 +113,8 @@ function SlotIndicators.read(item)
         local indicators = {}
         local maxAmmo = item:getMaxAmmo()
         if maxAmmo > 0 then
-            indicators[#indicators + 1] = indicator("ammo", item:getCurrentAmmoCount() / maxAmmo, maxAmmo)
+            local rounds = item:getCurrentAmmoCount() + (item:isRoundChambered() and 1 or 0)
+            indicators[#indicators + 1] = indicator("ammo", rounds / maxAmmo, maxAmmo)
         end
         local conditionMax = item:getConditionMax()
         if conditionMax > 0 then

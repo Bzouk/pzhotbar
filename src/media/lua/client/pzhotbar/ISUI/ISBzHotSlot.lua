@@ -285,10 +285,11 @@ function ISBzHotSlot:prerender()
         self:drawRectBorderStatic(0, 0, self.width, self.height, self.borderColor.a, self.borderColor.r, self.borderColor.g, self.borderColor.b)
     end
     local itemInfo = self.itemInfo
-    if ISMouseDrag.dragging and self:isMouseOver() then
+    local hovered = self:isMouseOver()
+    if hovered and ISMouseDrag.dragging then
         self:drawRectBorder(0, 0, self.width, self.height, 1, 1, 0.56, 0.12)
         self:drawRectBorder(1, 1, self.width - 2, self.height - 2, 1, 1, 0.56, 0.12)
-    elseif hasItem(itemInfo) and self:isMouseOver() then
+    elseif hovered and hasItem(itemInfo) then
         self:drawRect(0, 0, self.width, self.height, 0.1, 1, 1, 1)
     end
     if not hasItem(itemInfo) then
@@ -307,7 +308,8 @@ function ISBzHotSlot:prerender()
     end
     -- Only the vanilla inventory pane clears drawDirty, so while it is collapsed the
     -- flag stays set: recount at most every UPDATE_MS, but never miss a change.
-    if playerInventory:isDrawDirty() then
+    -- Ammo, freshness and radio power change without setting it, so a bar always recounts.
+    if playerInventory:isDrawDirty() or #(itemInfo.indicators or {}) > 0 then
         self.updatePending = true
     end
     if self.updatePending and getTimestampMs() >= (self.nextUpdate or 0) then
