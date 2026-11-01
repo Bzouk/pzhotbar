@@ -4,8 +4,7 @@
 ---@field texture Texture?
 ---@field isPoison boolean?
 ---@field isFrozen boolean?
----@field condition number?
----@field color {r: number, g: number, b: number, a: number}?
+---@field indicators BzIndicator[]?
 
 ---@class ISBzHotSlot: ISPanel
 ---@field slotNum integer
@@ -20,6 +19,10 @@
 ---@field updatePending boolean?
 ---@field nextUpdate number?
 local ISBzHotSlot = ISPanel:derive("ISBzHotSlot")
+
+local SlotIndicators = require("pzhotbar/SlotIndicators")
+
+local INDICATOR_BAR_HEIGHT = 4
 
 -- Umbrella's ISMouseDrag does not declare the field vanilla sets while dragging items.
 ---@class ISMouseDrag
@@ -218,7 +221,7 @@ function ISBzHotSlot:setItem(invItem)
     end
 end
 
---- Recounts the item and computes the status bar (condition, fill, freshness).
+--- Recounts the item and reads what its status bars show.
 function ISBzHotSlot:updateItem()
     local itemInfo = self.itemInfo
     if not hasItem(itemInfo) then
@@ -239,48 +242,36 @@ function ISBzHotSlot:updateItem()
             itemInfo.texture = instItem:getTexture()
         end
     end
+    local itemFromInv = playerInventory:getBestEvalArgRecurse(predicateItem, predicateBestItem, itemInfo.itemFullName)
+    itemInfo.indicators = SlotIndicators.read(itemFromInv)
     itemInfo.isPoison = false
     itemInfo.isFrozen = false
-    itemInfo.condition = 0
-    itemInfo.color = {r = 0, g = 0.502, b = 0, a = 0.4}
-    local itemFromInv = playerInventory:getBestEvalArgRecurse(predicateItem, predicateBestItem, itemInfo.itemFullName)
-    if instanceof(itemFromInv, "HandWeapon") then
-        itemInfo.condition = itemFromInv:getCondition() / itemFromInv:getConditionMax()
-    elseif instanceof(itemFromInv, "DrainableComboItem") then
-        itemInfo.condition = itemFromInv:getCurrentUsesFloat()
-    elseif instanceof(itemFromInv, "ComboItem") then
-        if itemFromInv:hasComponent(ComponentType.FluidContainer) then
-            itemInfo.condition = itemFromInv:getFluidContainer():getFilledRatio()
-        end
-    end
-    if itemInfo.condition > 0 then
-        local condition = itemInfo.condition
-        if condition >= 0.8 and condition <= 1 then
-            itemInfo.color = {r = 0, g = 0.502, b = 0, a = 0.4}
-        elseif condition >= 0.6 and condition <= 0.8 then
-            itemInfo.color = {r = 0.678, g = 1, b = 0.184, a = 0.4}
-        elseif condition >= 0.2 and condition < 0.6 then
-            itemInfo.color = {r = 1, g = 0.271, b = 0, a = 0.4}
-        else
-            itemInfo.color = {r = 1, g = 0, b = 0, a = 0.4}
-        end
-        return
-    end
     -- smoke is also food
     if instanceof(itemFromInv, "Food") then
         ---@cast itemFromInv Food
         itemInfo.isPoison = itemFromInv:isPoison()
         itemInfo.isFrozen = itemFromInv:isFrozen()
-        local hunger = itemFromInv:getHungerChange()
-        local meltingTime = itemFromInv:getMeltingTime()
-        if meltingTime > 0 then
-            itemInfo.condition = math.abs(meltingTime / 100)
-            itemInfo.color = {r = 0, g = 0, b = 0.5, a = 0.4}
-        elseif hunger ~= 0 then
-            itemInfo.condition = -hunger
-            itemInfo.color = {r = 0.678, g = 1, b = 0.384, a = 0.4}
-        end
     end
+end
+
+--- Draws a bar per indicator, stacked up from the bottom of the icon.
+---@param iconBoxSize number
+---@return number height all bars together take, 0 without bars
+function ISBzHotSlot:drawIndicators(iconBoxSize)
+    local indicators = self.itemInfo.indicators or {}
+    if #indicators == 0 then
+        return 0
+    end
+    local x = 1
+    local width = self.width - 2
+    local bottom = math.floor(iconBoxSize) - 1
+    for i, indicator in ipairs(indicators) do
+        local y = bottom - i * INDICATOR_BAR_HEIGHT
+        local r, g, b = SlotIndicators.color(indicator)
+        self:drawRect(x, y, width, INDICATOR_BAR_HEIGHT, 0.28, r, g, b)
+        self:drawRect(x, y, width * indicator.fraction, INDICATOR_BAR_HEIGHT, 0.95, r, g, b)
+    end
+    return #indicators * INDICATOR_BAR_HEIGHT + 1
 end
 
 function ISBzHotSlot:prerender()
@@ -323,10 +314,6 @@ function ISBzHotSlot:prerender()
     if itemInfo.count >= 1 then
         alpha = 0.9
     end
-    if itemInfo.condition > 0 then
-        local sizeOfStatusRect = iconBoxSize * itemInfo.condition
-        self:drawRect(0, iconBoxSize - sizeOfStatusRect, self.width, sizeOfStatusRect, itemInfo.color.a, itemInfo.color.r, itemInfo.color.g, itemInfo.color.b)
-    end
     if itemInfo.texture == nil then
         self.removeButton:setVisible(false)
         return
@@ -337,14 +324,10 @@ function ISBzHotSlot:prerender()
     elseif itemInfo.isFrozen then
         self:drawTexture(frozenItemIcon, 0, 0, 1, 1, 1, 1)
     end
+    local barsHeight = self:drawIndicators(iconBoxSize)
     local text = "(" .. tostring(itemInfo.count) .. ")"
     local textHeight = getTextManager():MeasureStringY(UIFont.Small, text) + 1
-    local y
-    if self.showDelete then
-        y = self.removeButton.y - textHeight
-    else
-        y = self:getHeight() - textHeight
-    end
+    local y = iconBoxSize - barsHeight - textHeight
     self:drawText(text, self.width - getTextManager():MeasureStringX(UIFont.Small, text), y, 1, 1, 1, 1, UIFont.Small)
 end
 
