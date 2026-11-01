@@ -2,7 +2,7 @@
 -- With units the bar is divided, one part per real unit (a dose, a round).
 local SlotIndicators = {}
 
----@alias BzIndicatorKind "condition"|"volume"|"fuel"|"charge"|"remaining"|"melting"|"freshness"
+---@alias BzIndicatorKind "condition"|"volume"|"fuel"|"charge"|"remaining"|"ammo"|"melting"|"freshness"
 
 ---@class BzIndicator
 ---@field kind BzIndicatorKind
@@ -24,6 +24,7 @@ local KIND_COLORS = {
     fuel = YELLOW,
     charge = YELLOW,
     remaining = GRAY,
+    ammo = GRAY,
     freshness = GREEN,
 }
 
@@ -98,13 +99,26 @@ function SlotIndicators.read(item)
     if item == nil then
         return {}
     end
+    if instanceof(item, "Radio") then
+        ---@cast item Radio
+        local device = item:getDeviceData()
+        if device ~= nil and device:getIsBatteryPowered() and device:getHasBattery() then
+            return {indicator("charge", device:getPower())}
+        end
+        return {}
+    end
     if instanceof(item, "HandWeapon") then
         ---@cast item HandWeapon
-        local conditionMax = item:getConditionMax()
-        if conditionMax <= 0 then
-            return {}
+        local indicators = {}
+        local maxAmmo = item:getMaxAmmo()
+        if maxAmmo > 0 then
+            indicators[#indicators + 1] = indicator("ammo", item:getCurrentAmmoCount() / maxAmmo, maxAmmo)
         end
-        return {indicator("condition", item:getCondition() / conditionMax)}
+        local conditionMax = item:getConditionMax()
+        if conditionMax > 0 then
+            indicators[#indicators + 1] = indicator("condition", item:getCondition() / conditionMax)
+        end
+        return indicators
     end
     if instanceof(item, "DrainableComboItem") then
         if item:hasTag(ItemTag.HIDE_REMAINING) then

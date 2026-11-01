@@ -38,6 +38,9 @@ local function fakeItem(classes, fields)
         getCondition = function() return fields.condition end,
         getConditionMax = function() return fields.conditionMax end,
         getMeltingTime = function() return fields.meltingTime or 0 end,
+        getMaxAmmo = function() return fields.maxAmmo or 0 end,
+        getCurrentAmmoCount = function() return fields.ammo or 0 end,
+        getDeviceData = function() return fields.device end,
         getAge = function() return fields.age or 0 end,
         getOffAgeMax = function() return fields.offAgeMax or NEVER_ROTS end,
     }
@@ -75,6 +78,26 @@ assert(#SlotIndicators.read(fakeItem({ "ComboItem" }, {})) == 0)
 -- weapon condition
 local weapon = single(fakeItem({ "HandWeapon" }, { condition = 3, conditionMax = 10 }))
 assert(weapon.kind == "condition" and weapon.fraction == 0.3)
+
+-- a firearm stacks ammo below condition, the ammo bar counts rounds
+local gun = SlotIndicators.read(fakeItem({ "HandWeapon" }, { condition = 5, conditionMax = 10, ammo = 3, maxAmmo = 15 }))
+assert(#gun == 2)
+assert(gun[1].kind == "ammo" and gun[1].fraction == 0.2 and gun[1].units == 15)
+assert(gun[2].kind == "condition" and gun[2].fraction == 0.5)
+
+-- a radio shows its battery and nothing else
+local function fakeDevice(batteryPowered, hasBattery, power)
+    return {
+        getIsBatteryPowered = function() return batteryPowered end,
+        getHasBattery = function() return hasBattery end,
+        getPower = function() return power end,
+    }
+end
+local radio = single(fakeItem({ "Radio" }, { device = fakeDevice(true, true, 0.6) }))
+assert(radio.kind == "charge" and radio.fraction == 0.6)
+assert(#SlotIndicators.read(fakeItem({ "Radio" }, { device = fakeDevice(true, false, 0) })) == 0)
+assert(#SlotIndicators.read(fakeItem({ "Radio" }, { device = fakeDevice(false, false, 0) })) == 0)
+assert(#SlotIndicators.read(fakeItem({ "Radio" }, {})) == 0)
 
 -- pills and other plain drainables count whole doses, one unit per dose
 local pills = single(fakeItem({ "DrainableComboItem" }, { currentUses = 7, maxUses = 10, type = "PillsBeta" }))
@@ -132,6 +155,7 @@ assert(colorOf("condition", 0.19) ~= colorOf("condition", 1))
 -- thawing is not a level to run out of
 assert(colorOf("melting", 0.1) == colorOf("melting", 1))
 assert(colorOf("freshness", 1) == colorOf("condition", 1))
+assert(colorOf("ammo", 1) == colorOf("remaining", 1))
 
 -- dividers: only when one unit is at least 4 px wide
 assert(SlotIndicators.fitsDividers({ kind = "remaining", fraction = 1, units = 10 }, 43))
