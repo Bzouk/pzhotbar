@@ -48,6 +48,22 @@ Hovering a slot shows the same info panel as the inventory.
 
 ![Item tooltip](docs/screenshots/item-tooltip.jpg)
 
+Thin bars along the bottom of the icon show the state of the copy a click would use (the
+fullest one for fluid containers, the one in the best condition otherwise). The colour says
+what a bar measures; any bar under 20 % turns red, except the thaw bar:
+
+| Item | Bar |
+|---|---|
+| Weapon | Condition (green); firearms also rounds in the magazine plus the chambered one (gray) |
+| Pills, thread and other drainables | Doses left (gray), divided into one part per dose when they fit |
+| Water bottles and other fluid containers | Fill (blue); fuel cans yellow |
+| Lighters, flashlights, batteries, blow torches | Fuel or charge (yellow) |
+| Radio with a battery | Battery charge (yellow) |
+| Food that goes off | Freshness (green), blue while frozen; thawing food shows a blue thaw bar |
+
+Slots react to the mouse: hovering a filled slot lights it up, and while you drag an item or a slot
+the slot under the mouse gets an orange frame.
+
 > The screenshots are from the earlier Build 41 version. The layout and behaviour are the
 > same; some Build 42 additions are not pictured yet.
 
@@ -145,7 +161,7 @@ Blindcoder's Modding Utility is no longer required.
 
 | Version | Build | Workshop | Source |
 |---|---|---|---|
-| BZQuickSlots 0.4.1 (this one) | B42.21+ | [3396010813](https://steamcommunity.com/sharedfiles/filedetails/?id=3396010813) | `main` |
+| BZQuickSlots 0.5.0 (this one) | B42.21+ | [3396010813](https://steamcommunity.com/sharedfiles/filedetails/?id=3396010813) | `main` |
 | BzoukPzHotBarNew | B41 | [3133189049](https://steamcommunity.com/sharedfiles/filedetails/?id=3133189049) | tag `v0.1.4-b41` |
 | Original Lua mod | B41 | [2434425002](https://steamcommunity.com/sharedfiles/filedetails/?id=2434425002) | archived repo `pz-bzoukhotbar` |
 
