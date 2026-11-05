@@ -9,6 +9,14 @@ Quick access bars for items. Drag an item into a slot and use it with one click 
 
 [h3]Do not run this alongside the older versions of the mod (links below). They fight over the same bars.[/h3]
 
+[h2]What's new in 0.5.0[/h2]
+[list]
+[*][b]Status bars on the slot[/b]: weapon condition, rounds in the magazine (chamber included), pill and thread doses split into parts, fluid fill, fuel, battery charge of flashlights and radios, and how fresh food is (blue while frozen or thawing). The colour says what a bar measures; any bar under 20 % turns red.
+[*][b]Swap slots by dragging[/b]: drag a slot onto another one to swap them, also between bars; onto an empty slot it moves there.
+[*]Slots light up on hover and get an orange frame while you drag an item or a slot over them.
+[*]Dropping an item over a slot's delete button now puts it in the slot.
+[/list]
+
 [h2]What's new in 0.4.0[/h2]
 [b]Separate slots per save[/b] (optional, off by default): each save keeps its own slots, bar positions and hidden state; a new save starts with a copy of your shared set (thanks MD for the request). Every Mod Options text is now translated in all six languages, and four tick boxes now show their tooltips. The Chinese, Spanish, French and Russian additions are machine translated — corrections are welcome in the comments.
 0.4.1: left click on a mask filter puts it into your worn respirator or gas mask (thanks Furizu for the idea), and slots recount right after a craft finishes.
@@ -28,7 +36,7 @@ Quick access bars for items. Drag an item into a slot and use it with one click 
 [h2]Usage[/h2]
 [b]Tab[/b] shows and hides the bars. Bars drag around freely and use the same window frame as the inventory panel (X to hide, pin to collapse).
 
-A slot holds an [i]item type[/i], not an item. Drag any item into a slot — you do not need to own it. Drag a slot onto another one to swap them, also between bars; onto an empty slot it moves there. The number on a slot counts non-broken items across every container on you, nested ones included (bandages in a first aid kit in a school bag still count). Broken items are ignored. Hovering a slot shows the same info panel as the inventory.
+A slot holds an [i]item type[/i], not an item. Drag any item into a slot — you do not need to own it. Drag a slot onto another one to swap them, also between bars; onto an empty slot it moves there. The number on a slot counts non-broken items across every container on you, nested ones included (bandages in a first aid kit in a school bag still count). Broken items are ignored. Hovering a slot shows the same info panel as the inventory. Thin bars on the icon show the state of the best copy you carry: condition, rounds, doses, fill, fuel, charge or freshness.
 
 [u]Right click[/u] behaves exactly like right-clicking the item in the inventory.
 
