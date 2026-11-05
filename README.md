@@ -48,8 +48,9 @@ Hovering a slot shows the same info panel as the inventory.
 
 ![Item tooltip](docs/screenshots/item-tooltip.jpg)
 
-Thin bars along the bottom of the icon show the state of the best copy you carry. The colour
-says what a bar measures; any bar under 20 % turns red:
+Thin bars along the bottom of the icon show the state of the copy a click would use (the
+fullest one for fluid containers, the one in the best condition otherwise). The colour says
+what a bar measures; any bar under 20 % turns red, except the thaw bar:
 
 | Item | Bar |
 |---|---|
@@ -60,7 +61,7 @@ says what a bar measures; any bar under 20 % turns red:
 | Radio with a battery | Battery charge (yellow) |
 | Food that goes off | Freshness (green), blue while frozen; thawing food shows a blue thaw bar |
 
-Slots react to the mouse: hovering a slot lights it up, and while you drag an item or a slot
+Slots react to the mouse: hovering a filled slot lights it up, and while you drag an item or a slot
 the slot under the mouse gets an orange frame.
 
 > The screenshots are from the earlier Build 41 version. The layout and behaviour are the
