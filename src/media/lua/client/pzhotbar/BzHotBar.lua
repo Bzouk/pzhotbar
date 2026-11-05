@@ -1,4 +1,5 @@
 local ISBzHotBarWindow = require("pzhotbar/ISUI/ISBzHotBarWindow")
+local ISBzHotSlot = require("pzhotbar/ISUI/ISBzHotSlot")
 local ConfigFile = require("pzhotbar/ConfigFile")
 
 local FONT_UI_SMALL = getTextManager():getFontHeight(UIFont.Small)
@@ -211,6 +212,9 @@ end
 
 --- Hidden bars leave the UI manager, or the game keeps calling update() on every slot.
 local function showWindows(showWin)
+    if not showWin then
+        ISBzHotSlot.cancelDrag()
+    end
     for _, window in pairs(windowsHolder) do
         if window:getIsVisible() ~= showWin then
             window:setVisible(showWin)

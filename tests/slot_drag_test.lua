@@ -64,12 +64,13 @@ package.preload["pzhotbar/SlotIndicators"] = function() return {} end
 local ISBzHotSlot = require("pzhotbar/ISUI/ISBzHotSlot")
 
 local used
+local onTop = {}
 local function newSlot(items, num)
     local slot = ISBzHotSlot:new(0, 0, 50, 50, items, num, "X", true, false, false, 1)
     slot:createChildren()
     -- the bar: a slot only brings it to the top
     ---@diagnostic disable-next-line: missing-fields
-    slot.parent = { bringToTop = function() end }
+    slot.parent = { bringToTop = function(bar) onTop[bar] = true end }
     slot.activeteSlot = function(self) used = self end
     return slot
 end
@@ -79,26 +80,28 @@ local function press(slot, x, y)
     slot:onMouseDown(0, 0)
 end
 
-local function moveTo(source, x, y)
+-- every frame the bars render, which reads the drag
+local function moveTo(x, y)
     mouse.x, mouse.y = x, y
-    source:update()
+    ISBzHotSlot.draggedSlot()
 end
 
--- the game sends the release to what is under the mouse, then calls update() on every element
-local function release(source, target)
+-- the game sends the release to what is under the mouse, then renders
+local function release(target)
     mouse.down = false
     if target then
         target:onMouseUp(0, 0)
     end
-    source:update()
+    ISBzHotSlot.draggedSlot()
 end
 
--- dragging a slot onto a full one swaps them
+-- dragging a slot onto a full one swaps them, the pressed slot's bar goes to the top
 local items = { [0] = "Base.Axe", [1] = "Base.Apple" }
 local a, b = newSlot(items, 0), newSlot(items, 1)
 press(a, 10, 10)
-moveTo(a, 70, 10)
-release(a, b)
+assert(onTop[a.parent], "bar of the pressed slot not on top")
+moveTo(70, 10)
+release(b)
 assert(items[0] == "Base.Apple" and items[1] == "Base.Axe", "slots not swapped")
 assert(a.itemInfo.itemFullName == "Base.Apple" and b.itemInfo.itemFullName == "Base.Axe")
 assert(used == nil, "a drag must not use a slot")
@@ -107,22 +110,31 @@ assert(used == nil, "a drag must not use a slot")
 items = { [0] = "Base.Axe", [1] = "Base.Apple" }
 a, b = newSlot(items, 0), newSlot(items, 1)
 press(a, 10, 10)
-release(a, a)
+release(a)
 assert(used == a, "click did not use the slot")
 used = nil
 press(a, 10, 10)
-moveTo(a, 14, 6)
-release(a, a)
+moveTo(14, 6)
+release(a)
 assert(used == a, "a move up to the threshold is a click")
 assert(items[0] == "Base.Axe" and items[1] == "Base.Apple")
 
--- dragging onto an empty slot moves the item there
+-- a release over a slot uses it only when the press was on it too
 used = nil
+press(a, 48, 10)
+moveTo(52, 10)
+release(b)
+assert(used == nil, "a slot pressed next to it was used")
+mouse.down = true
+release(b)
+assert(used == nil, "a release after a press outside the slots used a slot")
+
+-- dragging onto an empty slot moves the item there
 items = { [0] = "Base.Axe" }
 a, b = newSlot(items, 0), newSlot(items, 1)
 press(a, 10, 10)
-moveTo(a, 70, 10)
-release(a, b)
+moveTo(70, 10)
+release(b)
 assert(items[0] == nil and items[1] == "Base.Axe", "item not moved to the empty slot")
 assert(a.itemInfo.itemFullName == nil and b.itemInfo.itemFullName == "Base.Axe")
 
@@ -130,43 +142,47 @@ assert(a.itemInfo.itemFullName == nil and b.itemInfo.itemFullName == "Base.Axe")
 local bar1, bar2 = { [0] = "Base.Axe" }, { [3] = "Base.Apple" }
 a, b = newSlot(bar1, 0), newSlot(bar2, 3)
 press(a, 10, 10)
-moveTo(a, 10, 200)
-release(a, b)
+moveTo(10, 200)
+release(b)
 assert(bar1[0] == "Base.Apple" and bar2[3] == "Base.Axe", "slots of two bars not swapped")
 
--- a release outside every slot cancels the drag, a later release over a slot is a plain click
+-- a release outside every slot cancels the drag, a later press elsewhere does not finish it
 items = { [0] = "Base.Axe", [1] = "Base.Apple" }
 a, b = newSlot(items, 0), newSlot(items, 1)
 press(a, 10, 10)
-moveTo(a, 300, 300)
-release(a, nil)
-release(a, b)
+moveTo(300, 300)
+release(nil)
+assert(ISBzHotSlot.draggedSlot() == nil, "drag still on after a release outside the slots")
+mouse.down = true
+moveTo(70, 10)
+release(b)
 assert(items[0] == "Base.Axe" and items[1] == "Base.Apple", "release outside the slots changed them")
-assert(used == b, "release after a cancelled drag is a click")
+assert(used == nil)
 
 -- a drag back onto its own slot does nothing
-used = nil
 press(a, 10, 10)
-moveTo(a, 300, 300)
-moveTo(a, 10, 10)
-release(a, a)
+moveTo(300, 300)
+moveTo(10, 10)
+release(a)
 assert(used == nil, "a drag back onto its slot used it")
 assert(items[0] == "Base.Axe" and items[1] == "Base.Apple")
 
--- an empty slot does not drag
+-- an empty slot does not drag, its bar stays where it is
 items = { [1] = "Base.Apple" }
 a, b = newSlot(items, 0), newSlot(items, 1)
 press(a, 10, 10)
-moveTo(a, 70, 10)
-release(a, b)
+assert(not onTop[a.parent], "bar of an empty slot brought to the top")
+moveTo(70, 10)
+release(b)
 assert(items[0] == nil and items[1] == "Base.Apple", "an empty slot was dragged")
+assert(used == nil, "dragging an empty slot used the slot it was released over")
 
 -- the delete button passes a drop over it to its slot (#57)
 items = { [0] = "Base.Axe", [1] = "Base.Apple" }
 a, b = newSlot(items, 0), newSlot(items, 1)
 press(a, 10, 10)
-moveTo(a, 70, 10)
-release(a, b.removeButton)
+moveTo(70, 10)
+release(b.removeButton)
 assert(items[0] == "Base.Apple" and items[1] == "Base.Axe", "slot dropped over the delete button not swapped")
 local bandage = { getFullType = function() return "Base.Bandage" end, getTexture = function() return {} end }
 ISMouseDrag.dragging = { bandage }

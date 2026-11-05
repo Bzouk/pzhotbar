@@ -66,12 +66,30 @@ local DRAG_THRESHOLD = 4
 ---@type {slot: ISBzHotSlot, x: number, y: number, started: boolean}?
 local drag
 
+--- The pressed slot once the mouse moved past DRAG_THRESHOLD since the press, for the mouse release itself.
 ---@return ISBzHotSlot?
-local function draggedSlot()
+local function movedSlot()
     if drag and not drag.started then
         drag.started = math.abs(getMouseX() - drag.x) > DRAG_THRESHOLD or math.abs(getMouseY() - drag.y) > DRAG_THRESHOLD
     end
     return drag and drag.started and drag.slot or nil
+end
+
+--- The slot being dragged. Update and render run after the mouse events, so a button already up
+--- means no slot took the release.
+---@return ISBzHotSlot?
+local function draggedSlot()
+    if not isMouseButtonDown(0) then
+        drag = nil
+    end
+    return movedSlot()
+end
+
+ISBzHotSlot.draggedSlot = draggedSlot
+
+--- Hidden bars draw nothing and take no release.
+function ISBzHotSlot.cancelDrag()
+    drag = nil
 end
 
 --- Swaps the items of two slots, on one bar or two; an empty slot takes the other one's item.
@@ -81,9 +99,9 @@ local function swapSlots(a, b)
     a.itemInfo, b.itemInfo = b.itemInfo, a.itemInfo
     a.items[a.slotNum] = a.itemInfo.itemFullName
     b.items[b.slotNum] = b.itemInfo.itemFullName
+    -- a recount waiting on one slot is for the item now in the other one
+    a.updatePending, b.updatePending = true, true
 end
-
-ISBzHotSlot.draggedSlot = draggedSlot
 
 local frozenItemIcon = getTexture("media/ui/icon_frozen.png")
 local poisonIcon = getTexture("media/ui/SkullPoison.png")
@@ -169,7 +187,7 @@ function ISBzHotSlot:createChildren()
     self.removeButton:setVisible(self.showDelete)
     -- the button takes a release over it and the slot gets none: pass drops on to the slot
     self.removeButton.onMouseUp = function(button, x, y)
-        if ISMouseDrag.dragging or draggedSlot() then
+        if ISMouseDrag.dragging or movedSlot() then
             self:onMouseUp()
         else
             ISButton.onMouseUp(button, x, y)
@@ -179,12 +197,18 @@ function ISBzHotSlot:createChildren()
 end
 
 function ISBzHotSlot:onMouseDown()
-    drag = hasItem(self.itemInfo) and {slot = self, x = getMouseX(), y = getMouseY(), started = false} or nil
+    drag = nil
+    if hasItem(self.itemInfo) then
+        drag = {slot = self, x = getMouseX(), y = getMouseY(), started = false}
+        -- the bar draws the dragged icon, so it goes above the other bars
+        self:getParent():bringToTop()
+    end
     return true
 end
 
 function ISBzHotSlot:onMouseUp()
-    local dragged = draggedSlot()
+    local pressed = drag and drag.slot
+    local dragged = movedSlot()
     drag = nil
     if ISMouseDrag.dragging then
         -- update with new item
@@ -193,7 +217,8 @@ function ISBzHotSlot:onMouseUp()
         if dragged ~= self then
             swapSlots(dragged, self)
         end
-    else
+    elseif pressed == self then
+        -- a click: pressed and released on this slot
         self:activeteSlot()
     end
 end
@@ -205,17 +230,8 @@ function ISBzHotSlot:hideTooltip()
     end
 end
 
---- Ends a drag released outside every slot, shows the item tooltip while the mouse is over the slot.
+--- Shows the item tooltip while the mouse is over the slot.
 function ISBzHotSlot:update()
-    if drag and drag.slot == self then
-        if not isMouseButtonDown(0) then
-            -- update() runs after the mouse events, so no slot took the release
-            drag = nil
-        elseif not drag.started and draggedSlot() then
-            -- the bar drawing the dragged icon goes above the other bars
-            self:getParent():bringToTop()
-        end
-    end
     if not self.showToolTip then
         return
     end
