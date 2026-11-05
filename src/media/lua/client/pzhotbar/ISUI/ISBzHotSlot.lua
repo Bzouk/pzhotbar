@@ -58,6 +58,59 @@ end
 
 local UPDATE_MS = 500
 
+-- like vanilla inventory drags: a shorter move between press and release is a click
+local DRAG_THRESHOLD = 4
+-- the bars render every frame; a drag nobody read for this long had its bars hidden (Tab, ESC menu, reload)
+local DRAG_UNSEEN_MS = 250
+
+--- The slot pressed with the mouse, a drag onto another slot once the mouse moved past DRAG_THRESHOLD.
+--- Own state, not ISMouseDrag.dragging: vanilla would drop a dragged item on the floor.
+---@type {slot: ISBzHotSlot, x: number, y: number, started: boolean, seen: number}?
+local drag
+
+--- The pressed slot once the mouse moved past DRAG_THRESHOLD since the press, for the mouse release itself.
+---@return ISBzHotSlot?
+local function movedSlot()
+    if drag and getTimestampMs() - drag.seen > DRAG_UNSEEN_MS then
+        drag = nil
+    end
+    if drag and not drag.started then
+        drag.started = math.abs(getMouseX() - drag.x) > DRAG_THRESHOLD or math.abs(getMouseY() - drag.y) > DRAG_THRESHOLD
+        if drag.started then
+            -- the bar draws the dragged icon, so it goes above the other bars
+            drag.slot:getParent():bringToTop()
+        end
+    end
+    return drag and drag.started and drag.slot or nil
+end
+
+--- The slot being dragged. Update and render run after the mouse events, so a button already up
+--- means no slot took the release.
+---@return ISBzHotSlot?
+local function draggedSlot()
+    if not isMouseButtonDown(0) then
+        drag = nil
+    end
+    local slot = movedSlot()
+    if drag then
+        drag.seen = getTimestampMs()
+    end
+    return slot
+end
+
+ISBzHotSlot.draggedSlot = draggedSlot
+
+--- Swaps the items of two slots, on one bar or two; an empty slot takes the other one's item.
+---@param a ISBzHotSlot
+---@param b ISBzHotSlot
+local function swapSlots(a, b)
+    a.itemInfo, b.itemInfo = b.itemInfo, a.itemInfo
+    a.items[a.slotNum] = a.itemInfo.itemFullName
+    b.items[b.slotNum] = b.itemInfo.itemFullName
+    -- a recount waiting on one slot is for the item now in the other one
+    a.updatePending, b.updatePending = true, true
+end
+
 local frozenItemIcon = getTexture("media/ui/icon_frozen.png")
 local poisonIcon = getTexture("media/ui/SkullPoison.png")
 
@@ -140,14 +193,34 @@ function ISBzHotSlot:createChildren()
     local sizeOfRemoveButton = getSizeOfRemoveButton(self.deleteButText)
     self.removeButton = ISButton:new(0, self:getHeight() - sizeOfRemoveButton, self:getWidth(), sizeOfRemoveButton, self.deleteButText, self, ISBzHotSlot.removeItem)
     self.removeButton:setVisible(self.showDelete)
+    -- the button takes a release over it and the slot gets none: pass drops on to the slot
+    self.removeButton.onMouseUp = function(button, x, y)
+        if ISMouseDrag.dragging or movedSlot() then
+            self:onMouseUp()
+        else
+            ISButton.onMouseUp(button, x, y)
+        end
+    end
     self:addChild(self.removeButton)
 end
 
+function ISBzHotSlot:onMouseDown()
+    drag = hasItem(self.itemInfo) and {slot = self, x = getMouseX(), y = getMouseY(), started = false, seen = getTimestampMs()} or nil
+    return true
+end
+
 function ISBzHotSlot:onMouseUp()
+    local dragged = movedSlot()
+    local pressed = drag and drag.slot
+    drag = nil
     if ISMouseDrag.dragging then
         -- update with new item
         self:setItem(ISInventoryPane.getActualItems(ISMouseDrag.dragging)[1])
-    else
+    elseif dragged then
+        -- back onto its own slot this changes nothing
+        swapSlots(dragged, self)
+    elseif pressed == self then
+        -- a click: pressed and released on this slot
         self:activeteSlot()
     end
 end
@@ -164,7 +237,7 @@ function ISBzHotSlot:update()
     if not self.showToolTip then
         return
     end
-    if ISMouseDrag.dragging or not self:isMouseOver() or not hasItem(self.itemInfo) then
+    if ISMouseDrag.dragging or not self:isMouseOver() or not hasItem(self.itemInfo) or draggedSlot() then
         self:hideTooltip()
         return
     end
@@ -288,7 +361,8 @@ function ISBzHotSlot:prerender()
     end
     local itemInfo = self.itemInfo
     local hovered = self:isMouseOver()
-    if hovered and ISMouseDrag.dragging then
+    local dragged = hovered and draggedSlot()
+    if hovered and (ISMouseDrag.dragging or dragged and dragged ~= self) then
         self:drawRectBorder(0, 0, self.width, self.height, 1, 1, 0.56, 0.12)
         self:drawRectBorder(1, 1, self.width - 2, self.height - 2, 1, 1, 0.56, 0.12)
     elseif hovered and hasItem(itemInfo) then
