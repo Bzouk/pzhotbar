@@ -5,6 +5,7 @@ package.path = "src/media/lua/client/?.lua;" .. package.path
 next, unpack, table.unpack = nil, nil, nil
 
 local mouse = { x = 0, y = 0, down = false }
+local clock = 0
 
 -- stand-ins for the game's UI classes, just what a slot calls
 local function uiClass()
@@ -23,7 +24,6 @@ local function uiClass()
     function class:setVisible() end
     function class:addChild(child) child.parent = self end
     function class:getParent() return self.parent end
-    function class:onMouseDown() return true end
     return class
 end
 
@@ -55,6 +55,7 @@ local globals = {
     getMouseX = function() return mouse.x end,
     getMouseY = function() return mouse.y end,
     isMouseButtonDown = function() return mouse.down end,
+    getTimestampMs = function() return clock end,
 }
 for name, value in pairs(globals) do
     _G[name] = value
@@ -82,6 +83,7 @@ end
 
 -- every frame the bars render, which reads the drag
 local function moveTo(x, y)
+    clock = clock + 16
     mouse.x, mouse.y = x, y
     ISBzHotSlot.draggedSlot()
 end
@@ -95,20 +97,31 @@ local function release(target)
     ISBzHotSlot.draggedSlot()
 end
 
--- dragging a slot onto a full one swaps them, the pressed slot's bar goes to the top
-local items = { [0] = "Base.Axe", [1] = "Base.Apple" }
-local a, b = newSlot(items, 0), newSlot(items, 1)
+local function dragTo(source, target)
+    press(source, 10, 10)
+    moveTo(70, 10)
+    release(target)
+end
+
+local items, a, b
+local function twoSlots(content)
+    items = content
+    a, b = newSlot(items, 0), newSlot(items, 1)
+end
+
+-- dragging a slot onto a full one swaps them, the bar of the dragged slot goes to the top
+twoSlots({ [0] = "Base.Axe", [1] = "Base.Apple" })
 press(a, 10, 10)
-assert(onTop[a.parent], "bar of the pressed slot not on top")
+assert(not onTop[a.parent], "a press alone brought the bar to the top")
 moveTo(70, 10)
+assert(onTop[a.parent], "bar of the dragged slot not on top")
 release(b)
 assert(items[0] == "Base.Apple" and items[1] == "Base.Axe", "slots not swapped")
 assert(a.itemInfo.itemFullName == "Base.Apple" and b.itemInfo.itemFullName == "Base.Axe")
 assert(used == nil, "a drag must not use a slot")
 
 -- a click uses the slot, also with a small jitter of the mouse
-items = { [0] = "Base.Axe", [1] = "Base.Apple" }
-a, b = newSlot(items, 0), newSlot(items, 1)
+twoSlots({ [0] = "Base.Axe", [1] = "Base.Apple" })
 press(a, 10, 10)
 release(a)
 assert(used == a, "click did not use the slot")
@@ -118,6 +131,7 @@ moveTo(14, 6)
 release(a)
 assert(used == a, "a move up to the threshold is a click")
 assert(items[0] == "Base.Axe" and items[1] == "Base.Apple")
+assert(not onTop[a.parent], "a click brought the bar to the top")
 
 -- a release over a slot uses it only when the press was on it too
 used = nil
@@ -130,25 +144,18 @@ release(b)
 assert(used == nil, "a release after a press outside the slots used a slot")
 
 -- dragging onto an empty slot moves the item there
-items = { [0] = "Base.Axe" }
-a, b = newSlot(items, 0), newSlot(items, 1)
-press(a, 10, 10)
-moveTo(70, 10)
-release(b)
+twoSlots({ [0] = "Base.Axe" })
+dragTo(a, b)
 assert(items[0] == nil and items[1] == "Base.Axe", "item not moved to the empty slot")
 assert(a.itemInfo.itemFullName == nil and b.itemInfo.itemFullName == "Base.Axe")
 
 -- slots of two bars swap, each bar keeps its own table
 local bar1, bar2 = { [0] = "Base.Axe" }, { [3] = "Base.Apple" }
-a, b = newSlot(bar1, 0), newSlot(bar2, 3)
-press(a, 10, 10)
-moveTo(10, 200)
-release(b)
+dragTo(newSlot(bar1, 0), newSlot(bar2, 3))
 assert(bar1[0] == "Base.Apple" and bar2[3] == "Base.Axe", "slots of two bars not swapped")
 
 -- a release outside every slot cancels the drag, a later press elsewhere does not finish it
-items = { [0] = "Base.Axe", [1] = "Base.Apple" }
-a, b = newSlot(items, 0), newSlot(items, 1)
+twoSlots({ [0] = "Base.Axe", [1] = "Base.Apple" })
 press(a, 10, 10)
 moveTo(300, 300)
 release(nil)
@@ -159,6 +166,17 @@ release(b)
 assert(items[0] == "Base.Axe" and items[1] == "Base.Apple", "release outside the slots changed them")
 assert(used == nil)
 
+-- hidden bars end a drag: nothing renders it, a release over a shown bar later does nothing
+press(a, 10, 10)
+moveTo(70, 10)
+clock = clock + 1000
+release(b)
+assert(items[0] == "Base.Axe" and items[1] == "Base.Apple", "a drag survived hidden bars")
+press(a, 10, 10)
+clock = clock + 1000
+release(a)
+assert(used == nil, "a press survived hidden bars")
+
 -- a drag back onto its own slot does nothing
 press(a, 10, 10)
 moveTo(300, 300)
@@ -167,22 +185,15 @@ release(a)
 assert(used == nil, "a drag back onto its slot used it")
 assert(items[0] == "Base.Axe" and items[1] == "Base.Apple")
 
--- an empty slot does not drag, its bar stays where it is
-items = { [1] = "Base.Apple" }
-a, b = newSlot(items, 0), newSlot(items, 1)
-press(a, 10, 10)
-assert(not onTop[a.parent], "bar of an empty slot brought to the top")
-moveTo(70, 10)
-release(b)
+-- an empty slot does not drag
+twoSlots({ [1] = "Base.Apple" })
+dragTo(a, b)
 assert(items[0] == nil and items[1] == "Base.Apple", "an empty slot was dragged")
 assert(used == nil, "dragging an empty slot used the slot it was released over")
 
 -- the delete button passes a drop over it to its slot (#57)
-items = { [0] = "Base.Axe", [1] = "Base.Apple" }
-a, b = newSlot(items, 0), newSlot(items, 1)
-press(a, 10, 10)
-moveTo(70, 10)
-release(b.removeButton)
+twoSlots({ [0] = "Base.Axe", [1] = "Base.Apple" })
+dragTo(a, b.removeButton)
 assert(items[0] == "Base.Apple" and items[1] == "Base.Axe", "slot dropped over the delete button not swapped")
 local bandage = { getFullType = function() return "Base.Bandage" end, getTexture = function() return {} end }
 ISMouseDrag.dragging = { bandage }

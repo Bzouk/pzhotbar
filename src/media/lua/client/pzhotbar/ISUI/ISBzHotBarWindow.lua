@@ -58,9 +58,9 @@ end
 function ISBzHotBarWindow:render()
     ISCollapsableWindow.render(self)
     local dragged = ISBzHotSlot.draggedSlot()
-    if dragged and dragged.parent == self and dragged.itemInfo.texture then
+    if dragged and dragged:getParent() == self and dragged.itemInfo.texture then
         local size = dragged.width
-        self:drawTextureScaled(dragged.itemInfo.texture, getMouseX() - self:getAbsoluteX() - size / 2, getMouseY() - self:getAbsoluteY() - size / 2, size, size, 0.7, 1, 1, 1)
+        self:drawTextureScaled(dragged.itemInfo.texture, self:getMouseX() - size / 2, self:getMouseY() - size / 2, size, size, 0.7, 1, 1, 1)
     end
 end
 

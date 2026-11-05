@@ -60,17 +60,26 @@ local UPDATE_MS = 500
 
 -- like vanilla inventory drags: a shorter move between press and release is a click
 local DRAG_THRESHOLD = 4
+-- the bars render every frame; a drag nobody read for this long had its bars hidden (Tab, ESC menu, reload)
+local DRAG_UNSEEN_MS = 250
 
 --- The slot pressed with the mouse, a drag onto another slot once the mouse moved past DRAG_THRESHOLD.
 --- Own state, not ISMouseDrag.dragging: vanilla would drop a dragged item on the floor.
----@type {slot: ISBzHotSlot, x: number, y: number, started: boolean}?
+---@type {slot: ISBzHotSlot, x: number, y: number, started: boolean, seen: number}?
 local drag
 
 --- The pressed slot once the mouse moved past DRAG_THRESHOLD since the press, for the mouse release itself.
 ---@return ISBzHotSlot?
 local function movedSlot()
+    if drag and getTimestampMs() - drag.seen > DRAG_UNSEEN_MS then
+        drag = nil
+    end
     if drag and not drag.started then
         drag.started = math.abs(getMouseX() - drag.x) > DRAG_THRESHOLD or math.abs(getMouseY() - drag.y) > DRAG_THRESHOLD
+        if drag.started then
+            -- the bar draws the dragged icon, so it goes above the other bars
+            drag.slot:getParent():bringToTop()
+        end
     end
     return drag and drag.started and drag.slot or nil
 end
@@ -82,15 +91,14 @@ local function draggedSlot()
     if not isMouseButtonDown(0) then
         drag = nil
     end
-    return movedSlot()
+    local slot = movedSlot()
+    if drag then
+        drag.seen = getTimestampMs()
+    end
+    return slot
 end
 
 ISBzHotSlot.draggedSlot = draggedSlot
-
---- Hidden bars draw nothing and take no release.
-function ISBzHotSlot.cancelDrag()
-    drag = nil
-end
 
 --- Swaps the items of two slots, on one bar or two; an empty slot takes the other one's item.
 ---@param a ISBzHotSlot
@@ -197,26 +205,20 @@ function ISBzHotSlot:createChildren()
 end
 
 function ISBzHotSlot:onMouseDown()
-    drag = nil
-    if hasItem(self.itemInfo) then
-        drag = {slot = self, x = getMouseX(), y = getMouseY(), started = false}
-        -- the bar draws the dragged icon, so it goes above the other bars
-        self:getParent():bringToTop()
-    end
+    drag = hasItem(self.itemInfo) and {slot = self, x = getMouseX(), y = getMouseY(), started = false, seen = getTimestampMs()} or nil
     return true
 end
 
 function ISBzHotSlot:onMouseUp()
-    local pressed = drag and drag.slot
     local dragged = movedSlot()
+    local pressed = drag and drag.slot
     drag = nil
     if ISMouseDrag.dragging then
         -- update with new item
         self:setItem(ISInventoryPane.getActualItems(ISMouseDrag.dragging)[1])
     elseif dragged then
-        if dragged ~= self then
-            swapSlots(dragged, self)
-        end
+        -- back onto its own slot this changes nothing
+        swapSlots(dragged, self)
     elseif pressed == self then
         -- a click: pressed and released on this slot
         self:activeteSlot()
@@ -235,7 +237,7 @@ function ISBzHotSlot:update()
     if not self.showToolTip then
         return
     end
-    if ISMouseDrag.dragging or draggedSlot() or not self:isMouseOver() or not hasItem(self.itemInfo) then
+    if ISMouseDrag.dragging or not self:isMouseOver() or not hasItem(self.itemInfo) or draggedSlot() then
         self:hideTooltip()
         return
     end
@@ -359,7 +361,7 @@ function ISBzHotSlot:prerender()
     end
     local itemInfo = self.itemInfo
     local hovered = self:isMouseOver()
-    local dragged = draggedSlot()
+    local dragged = hovered and draggedSlot()
     if hovered and (ISMouseDrag.dragging or dragged and dragged ~= self) then
         self:drawRectBorder(0, 0, self.width, self.height, 1, 1, 0.56, 0.12)
         self:drawRectBorder(1, 1, self.width - 2, self.height - 2, 1, 1, 0.56, 0.12)
