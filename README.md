@@ -29,7 +29,9 @@ every usable copy you are carrying and left-click reaches in and uses one.
 
 ![The default bar](docs/screenshots/default-bar.jpg)
 
-Drag any item into a slot. You do not need to own the item to bind it.
+Drag any item into a slot. You do not need to own the item to bind it. Drag a slot onto
+another one to swap them, also between bars; onto an empty slot it moves there. Let go
+anywhere else and nothing changes.
 
 ![Dragging items into slots](docs/screenshots/drag-and-drop.jpg)
 
@@ -178,13 +180,15 @@ scripts/check.sh
 ```
 
 The config file reader and writer have a plain Lua test that runs outside the game, a second
-one checks that every language has the same translation keys and `%1` placeholders as EN, and
-a third one checks what the slot status bars show for each kind of item:
+one checks that every language has the same translation keys and `%1` placeholders as EN,
+a third one checks what the slot status bars show for each kind of item, and a fourth one
+checks clicking and dragging slots onto each other:
 
 ```bash
 lua tests/config_test.lua
 lua tests/translations_test.lua
 lua tests/slot_indicators_test.lua
+lua tests/slot_drag_test.lua
 ```
 
 `scripts/build.sh` builds the Workshop item into `build/Workshop/BZQuickSlots`:
