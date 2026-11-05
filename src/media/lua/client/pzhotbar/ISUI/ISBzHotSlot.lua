@@ -58,6 +58,33 @@ end
 
 local UPDATE_MS = 500
 
+-- like vanilla inventory drags: a shorter move between press and release is a click
+local DRAG_THRESHOLD = 4
+
+--- The slot pressed with the mouse, a drag onto another slot once the mouse moved past DRAG_THRESHOLD.
+--- Own state, not ISMouseDrag.dragging: vanilla would drop a dragged item on the floor.
+---@type {slot: ISBzHotSlot, x: number, y: number, started: boolean}?
+local drag
+
+---@return ISBzHotSlot?
+local function draggedSlot()
+    if drag and not drag.started then
+        drag.started = math.abs(getMouseX() - drag.x) > DRAG_THRESHOLD or math.abs(getMouseY() - drag.y) > DRAG_THRESHOLD
+    end
+    return drag and drag.started and drag.slot or nil
+end
+
+--- Swaps the items of two slots, on one bar or two; an empty slot takes the other one's item.
+---@param a ISBzHotSlot
+---@param b ISBzHotSlot
+local function swapSlots(a, b)
+    a.itemInfo, b.itemInfo = b.itemInfo, a.itemInfo
+    a.items[a.slotNum] = a.itemInfo.itemFullName
+    b.items[b.slotNum] = b.itemInfo.itemFullName
+end
+
+ISBzHotSlot.draggedSlot = draggedSlot
+
 local frozenItemIcon = getTexture("media/ui/icon_frozen.png")
 local poisonIcon = getTexture("media/ui/SkullPoison.png")
 
@@ -140,13 +167,32 @@ function ISBzHotSlot:createChildren()
     local sizeOfRemoveButton = getSizeOfRemoveButton(self.deleteButText)
     self.removeButton = ISButton:new(0, self:getHeight() - sizeOfRemoveButton, self:getWidth(), sizeOfRemoveButton, self.deleteButText, self, ISBzHotSlot.removeItem)
     self.removeButton:setVisible(self.showDelete)
+    -- the button takes a release over it and the slot gets none: pass drops on to the slot
+    self.removeButton.onMouseUp = function(button, x, y)
+        if ISMouseDrag.dragging or draggedSlot() then
+            self:onMouseUp()
+        else
+            ISButton.onMouseUp(button, x, y)
+        end
+    end
     self:addChild(self.removeButton)
 end
 
+function ISBzHotSlot:onMouseDown()
+    drag = hasItem(self.itemInfo) and {slot = self, x = getMouseX(), y = getMouseY(), started = false} or nil
+    return true
+end
+
 function ISBzHotSlot:onMouseUp()
+    local dragged = draggedSlot()
+    drag = nil
     if ISMouseDrag.dragging then
         -- update with new item
         self:setItem(ISInventoryPane.getActualItems(ISMouseDrag.dragging)[1])
+    elseif dragged then
+        if dragged ~= self then
+            swapSlots(dragged, self)
+        end
     else
         self:activeteSlot()
     end
@@ -159,12 +205,21 @@ function ISBzHotSlot:hideTooltip()
     end
 end
 
---- Shows the item tooltip while the mouse is over the slot.
+--- Ends a drag released outside every slot, shows the item tooltip while the mouse is over the slot.
 function ISBzHotSlot:update()
+    if drag and drag.slot == self then
+        if not isMouseButtonDown(0) then
+            -- update() runs after the mouse events, so no slot took the release
+            drag = nil
+        elseif not drag.started and draggedSlot() then
+            -- the bar drawing the dragged icon goes above the other bars
+            self:getParent():bringToTop()
+        end
+    end
     if not self.showToolTip then
         return
     end
-    if ISMouseDrag.dragging or not self:isMouseOver() or not hasItem(self.itemInfo) then
+    if ISMouseDrag.dragging or draggedSlot() or not self:isMouseOver() or not hasItem(self.itemInfo) then
         self:hideTooltip()
         return
     end
@@ -288,7 +343,8 @@ function ISBzHotSlot:prerender()
     end
     local itemInfo = self.itemInfo
     local hovered = self:isMouseOver()
-    if hovered and ISMouseDrag.dragging then
+    local dragged = draggedSlot()
+    if hovered and (ISMouseDrag.dragging or dragged and dragged ~= self) then
         self:drawRectBorder(0, 0, self.width, self.height, 1, 1, 0.56, 0.12)
         self:drawRectBorder(1, 1, self.width - 2, self.height - 2, 1, 1, 0.56, 0.12)
     elseif hovered and hasItem(itemInfo) then
